@@ -94,7 +94,13 @@ export default function TrashPage() {
                                 </div>
 
                                 <div className="absolute top-4 right-6 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <p className="text-[9px] font-black text-gray-500 uppercase italic tracking-tighter">Deleted {timeAgo(app.updated_at)}</p>
+                                    {app.updated_at && app.updated_at !== app.applied_date ? (
+                                        <p className="text-[9px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-tighter flex items-center gap-1">
+                                            <span className="text-xs">✏️</span> Modified {timeAgo(app.updated_at)}
+                                        </p>
+                                    ) : (
+                                        <p className="text-[9px] font-black text-gray-500 uppercase italic tracking-tighter">Deleted {timeAgo(app.updated_at)}</p>
+                                    )}
                                 </div>
                             </div>
                         ))}

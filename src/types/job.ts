@@ -6,11 +6,11 @@ export interface JobApplication {
     company: string;
     role: string;
     status: JobStatus;
-    applied_date: string; // ISO
-    follow_up_date?: string; // ISO
-    jd_text: string;
-    resume_text: string;
-    resume_file_name?: string;
+    applied_date: string;
+    follow_up_date?: string;
+    jd_text: string | null;
+    resume_text: string | null;
+    resume_file_name?: string | null;
     skill_gaps: string[];
     notes: string;
     application_url?: string;

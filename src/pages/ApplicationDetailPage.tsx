@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import {
     ChevronLeft, Trash2,
     CalendarCheck, AlignLeft, FileText, Tag,
-    Clock, Plus, Globe,
+    Plus, Globe,
     FileEdit, Laptop, Calendar, Sparkles, Check
 } from 'lucide-react'
 import { useJobStore } from '../store/useJobStore'
@@ -134,7 +134,7 @@ export default function ApplicationDetailPage() {
 
             <div className="bg-white dark:bg-[#020617] rounded-[2.5rem] border border-gray-200 dark:border-gray-800/50 shadow-premium p-6 md:p-10 transition-colors">
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 md:gap-8 mb-8 md:mb-12">
-                    <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-6">
+                    <div className="flex flex-col items-center md:flex-row md:items-start text-center md:text-left gap-6 w-full">
                         <div className="w-20 h-20 md:w-24 md:h-24 rounded-[2rem] bg-gray-100 dark:bg-gray-800/40 flex items-center justify-center text-4xl md:text-5xl shadow-inner border border-gray-200 dark:border-gray-800 transition-transform hover:scale-105 duration-500 shrink-0">🏢</div>
                         <div className="min-w-0 w-full">
                             {isEditingCompany ? (
@@ -145,7 +145,7 @@ export default function ApplicationDetailPage() {
                                         onChange={e => setTempCompany(e.target.value)}
                                         className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 px-4 py-2 rounded-xl border-2 border-primary-500/30 focus:border-primary-500 outline-none"
                                     />
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 justify-center md:justify-start">
                                         <button
                                             onClick={() => setIsEditingCompany(false)}
                                             className="px-3 py-1 text-xs font-bold text-gray-400 hover:text-white transition-colors"
@@ -167,7 +167,7 @@ export default function ApplicationDetailPage() {
                                     </div>
                                 </div>
                             ) : (
-                                <div className="flex items-center gap-2 group">
+                                <div className="flex items-center justify-center md:justify-start gap-2 group">
                                     <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white tracking-tight leading-tight truncate">{app.company}</h1>
                                     <button
                                         onClick={() => {
@@ -188,7 +188,7 @@ export default function ApplicationDetailPage() {
                                         onChange={e => setTempRole(e.target.value)}
                                         className="text-base md:text-lg font-bold text-gray-500 bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-lg border-2 border-primary-500/30 focus:border-primary-500 outline-none"
                                     />
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 justify-center md:justify-start">
                                         <button
                                             onClick={() => setIsEditingRole(false)}
                                             className="px-3 py-1 text-xs font-bold text-gray-400 hover:text-white transition-colors"
@@ -210,7 +210,7 @@ export default function ApplicationDetailPage() {
                                     </div>
                                 </div>
                             ) : (
-                                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 md:gap-3 mt-2">
+                                <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 md:gap-3 mt-2">
                                     <div className="flex items-center gap-2 group">
                                         <p className="text-base md:text-lg font-bold text-gray-500">{app.role}</p>
                                         <button
@@ -225,7 +225,7 @@ export default function ApplicationDetailPage() {
                                     </div>
                                     {app.application_url && (
                                         <>
-                                            <span className="hidden sm:inline w-1.5 h-1.5 rounded-full bg-gray-800" />
+                                            <span className="hidden md:inline w-1.5 h-1.5 rounded-full bg-gray-800" />
                                             <a
                                                 href={app.application_url}
                                                 target="_blank"
@@ -237,12 +237,28 @@ export default function ApplicationDetailPage() {
                                             </a>
                                         </>
                                     )}
-                                    <span className="hidden sm:inline w-1.5 h-1.5 rounded-full bg-gray-800" />
-                                    <div className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-[0.1em]">
-                                        <Clock size={12} className="text-primary-400" />
-                                        {app.updated_at && app.updated_at !== app.applied_date ? 'Modified: ' : 'Applied: '}
-                                        {formatLocalTime(app.updated_at || app.applied_date)}
-                                    </div>
+                                    {app.updated_at && app.updated_at !== app.applied_date ? (
+                                        <>
+                                            <span className="hidden md:inline w-1.5 h-1.5 rounded-full bg-gray-800" />
+                                            <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-[0.05em] sm:tracking-[0.1em] bg-orange-500/10 px-2 py-1 rounded-lg border border-orange-500/20 whitespace-nowrap">
+                                                <span className="text-xs">✏️</span>
+                                                <span className="hidden xs:inline">Modified:</span> {formatLocalTime(app.updated_at)}
+                                            </div>
+                                            <span className="hidden md:inline w-1.5 h-1.5 rounded-full bg-gray-800" />
+                                            <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.05em] sm:tracking-[0.1em] bg-emerald-500/10 px-2 py-1 rounded-lg border border-emerald-500/20 whitespace-nowrap">
+                                                <span className="text-xs">✨</span>
+                                                <span className="hidden xs:inline">Created:</span> {formatLocalTime(app.applied_date)}
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span className="hidden md:inline w-1.5 h-1.5 rounded-full bg-gray-800" />
+                                            <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.05em] sm:tracking-[0.1em] bg-emerald-500/10 px-2 py-1 rounded-lg border border-emerald-500/20 whitespace-nowrap">
+                                                <span className="text-xs">✨</span>
+                                                <span className="hidden xs:inline">Created:</span> {formatLocalTime(app.applied_date)}
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -284,20 +300,120 @@ export default function ApplicationDetailPage() {
 
                 {/* Pipeline Stepper */}
                 {currentStageIndex === -1 ? (
-                    // <div className="bg-white dark:bg-[#020617] rounded-[2rem] border border-gray-200 dark:border-white shadow-premium p-5 md:p-8 flex items-center justify-center text-center">
                     <div className="bg-white dark:bg-[#020617] rounded-[2rem] border border-gray-200 dark:border-white shadow-premium dark:shadow-[0_0_20px_rgba(255,255,255,0.3)] p-5 md:p-8 flex items-center justify-center text-center">
-
                         <div>
                             <div className="w-12 h-12 md:w-20 md:h-20 rounded-full bg-rose-500/10 flex items-center justify-center text-2xl md:text-4xl mx-auto mb-4 md:mb-6 border border-rose-500/20 shadow-[0_0_30px_rgba(244,63,94,0.15)] animate-bounce-slow">💪</div>
-                            <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white mb-2 md:mb-3">Every "No" Brings You Closer to a "Yes"</h3>
+                            <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white mb-2 md:mb-3">{currentStatus === 'Ghosted' ? 'Silence Speaks Volumes' : 'Every "No" Brings You Closer to a "Yes"'}</h3>
                             <p className="text-xs md:text-sm text-gray-400 max-w-lg mx-auto leading-relaxed">
-                                Resilience is the most important skill in your career. Don't let this outcome define your journey. Take a breath, dust yourself off, and crack the next one! You've got this.
+                                {currentStatus === 'Ghosted'
+                                    ? 'No response is still a response. Their silence reflects their process, not your value. Move forward—better opportunities with respectful teams await.'
+                                    : 'Resilience is the most important skill in your career. Don\'t let this outcome define your journey. Take a breath, dust yourself off, and crack the next one! You\'ve got this.'}
                             </p>
                             <button onClick={() => navigate('/applications')} className="mt-6 md:mt-8 px-6 md:px-8 py-2.5 md:py-3 rounded-full bg-gradient-to-r from-rose-500 to-rose-600 text-white text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] hover:scale-105 hover:shadow-lg hover:shadow-rose-500/20 transition-all duration-300">
                                 Find Next Opportunity
                             </button>
                         </div>
                     </div>
+                ) : currentStatus === 'Applied' ? (
+                    <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-[2rem] border-2 border-indigo-400 shadow-premium p-5 md:p-8 flex items-center justify-center text-center">
+                        <div>
+                            <div className="w-12 h-12 md:w-20 md:h-20 rounded-full bg-white/20 flex items-center justify-center text-3xl md:text-5xl mx-auto mb-4 md:mb-6 border-2 border-white/40">🚀</div>
+                            <h3 className="text-xl md:text-2xl font-black text-white mb-2 md:mb-3">Application Submitted!</h3>
+                            <p className="text-xs md:text-sm text-indigo-50 max-w-lg mx-auto leading-relaxed">
+                                Great start! Keep the momentum going. Track your progress and prepare for the next steps.
+                            </p>
+                        </div>
+                    </div>
+                ) : currentStatus === 'OA' ? (
+                    <div className="bg-gradient-to-r from-amber-500 to-orange-600 rounded-[2rem] border-2 border-amber-400 shadow-premium p-5 md:p-8 flex items-center justify-center text-center">
+                        <div>
+                            <div className="w-12 h-12 md:w-20 md:h-20 rounded-full bg-white/20 flex items-center justify-center text-3xl md:text-5xl mx-auto mb-4 md:mb-6 border-2 border-white/40">💻</div>
+                            <h3 className="text-xl md:text-2xl font-black text-white mb-2 md:mb-3">Online Assessment Time!</h3>
+                            <p className="text-xs md:text-sm text-amber-50 max-w-lg mx-auto leading-relaxed">
+                                Practice makes perfect. Review key concepts, manage your time wisely, and show them what you can do!
+                            </p>
+                        </div>
+                    </div>
+                ) : currentStatus === 'Interview' ? (
+                    <div className="bg-gradient-to-r from-blue-500 to-primary-600 rounded-[2rem] border-2 border-blue-400 shadow-premium p-5 md:p-8 flex items-center justify-center text-center">
+                        <div>
+                            <div className="w-12 h-12 md:w-20 md:h-20 rounded-full bg-white/20 flex items-center justify-center text-3xl md:text-5xl mx-auto mb-4 md:mb-6 border-2 border-white/40">🎯</div>
+                            <h3 className="text-xl md:text-2xl font-black text-white mb-2 md:mb-3">Interview Scheduled!</h3>
+                            <p className="text-xs md:text-sm text-blue-50 max-w-lg mx-auto leading-relaxed">
+                                Research the company, practice STAR responses, and prepare thoughtful questions. You've got this!
+                            </p>
+                        </div>
+                    </div>
+                ) : currentStatus === 'Offer' ? (
+                    <>
+                        <div className="fixed inset-0 pointer-events-none z-40 overflow-hidden">
+                            {[...Array(30)].map((_, i) => {
+                                const angle = (Math.random() * 90 - 45) + 45;
+                                const distance = 200 + Math.random() * 400;
+                                const tx = Math.cos(angle * Math.PI / 180) * distance;
+                                const ty = Math.sin(angle * Math.PI / 180) * distance;
+                                return (
+                                    <div
+                                        key={`left-${i}`}
+                                        className="absolute animate-confetti-left"
+                                        style={{
+                                            left: '5%',
+                                            top: '10%',
+                                            animationDelay: `${Math.random() * 0.3}s`,
+                                            animationDuration: `${1 + Math.random() * 0.8}s`,
+                                            '--tx': `${tx}px`,
+                                            '--ty': `${ty}px`
+                                        } as React.CSSProperties}
+                                    >
+                                        <div
+                                            className="w-2 h-2 md:w-3 md:h-3 rounded-sm"
+                                            style={{
+                                                backgroundColor: ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899', '#06b6d4'][Math.floor(Math.random() * 8)],
+                                                transform: `rotate(${Math.random() * 360}deg)`
+                                            }}
+                                        />
+                                    </div>
+                                );
+                            })}
+                            {[...Array(30)].map((_, i) => {
+                                const angle = (Math.random() * 90 - 45) + 135;
+                                const distance = 200 + Math.random() * 400;
+                                const tx = Math.cos(angle * Math.PI / 180) * distance;
+                                const ty = Math.sin(angle * Math.PI / 180) * distance;
+                                return (
+                                    <div
+                                        key={`right-${i}`}
+                                        className="absolute animate-confetti-right"
+                                        style={{
+                                            right: '5%',
+                                            top: '10%',
+                                            animationDelay: `${Math.random() * 0.3}s`,
+                                            animationDuration: `${1 + Math.random() * 0.8}s`,
+                                            '--tx': `${tx}px`,
+                                            '--ty': `${ty}px`
+                                        } as React.CSSProperties}
+                                    >
+                                        <div
+                                            className="w-2 h-2 md:w-3 md:h-3 rounded-sm"
+                                            style={{
+                                                backgroundColor: ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899', '#06b6d4'][Math.floor(Math.random() * 8)],
+                                                transform: `rotate(${Math.random() * 360}deg)`
+                                            }}
+                                        />
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        <div className="bg-gradient-to-r from-emerald-500 to-green-600 rounded-[2rem] border-2 border-emerald-400 shadow-premium p-5 md:p-8 flex items-center justify-center text-center relative z-10">
+                            <div>
+                                <div className="w-12 h-12 md:w-20 md:h-20 rounded-full bg-white/20 flex items-center justify-center text-3xl md:text-5xl mx-auto mb-4 md:mb-6 border-2 border-white/40">🎉</div>
+                                <h3 className="text-xl md:text-2xl font-black text-white mb-2 md:mb-3">Congratulations on the Offer!</h3>
+                                <p className="text-xs md:text-sm text-emerald-50 max-w-lg mx-auto leading-relaxed">
+                                    Your hard work paid off! Review the offer carefully, negotiate if needed, and celebrate this achievement!
+                                </p>
+                            </div>
+                        </div>
+                    </>
                 ) : (
                     // Job Progress
                     <div className="bg-white dark:bg-[#020617] rounded-[2rem] border border-gray-200 dark:border-gray-800/50 shadow-premium p-5 md:p-10 overflow-hidden relative group">
@@ -429,7 +545,9 @@ export default function ApplicationDetailPage() {
                                 />
                             ) : (
                                 <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-5 text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap font-mono min-h-[200px] border border-gray-200 dark:border-gray-800 transition-colors break-words overflow-hidden">
-                                    {app.jd_text || 'No description provided.'}
+                                    {app.jd_text ? app.jd_text : (
+                                        <span className="text-gray-400 italic">No job description added yet. Click Edit to add one.</span>
+                                    )}
                                 </div>
                             )}
                         </section>
@@ -582,25 +700,24 @@ export default function ApplicationDetailPage() {
                                             </button>
                                         </div>
 
-                                        {app.resume_file_name && (
+                                        {app.resume_text && (
                                             <button
                                                 onClick={async () => {
-                                                    if (app.resume_text) {
-                                                        try {
-                                                            const url = await getResumeUrl(app.resume_text)
-                                                            setSignedResumeUrl(url)
-                                                            setShowPdfViewer(true)
-                                                        } catch {
-                                                            toast.error('Could not load resume. Please try re-uploading.')
-                                                        }
-                                                    } else {
-                                                        toast.error('Resume file reference is missing. Please re-upload the resume.')
+                                                    try {
+                                                        const url = await getResumeUrl(app.resume_text || '')
+                                                        setSignedResumeUrl(url)
+                                                        setShowPdfViewer(true)
+                                                    } catch {
+                                                        toast.error('Could not load resume. Please try re-uploading.')
                                                     }
                                                 }}
                                                 className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-bold text-gray-700 dark:text-white transition-colors mt-2"
                                             >
                                                 <FileText size={16} /> View Resume
                                             </button>
+                                        )}
+                                        {app.resume_file_name && !app.resume_text && (
+                                            <p className="text-xs text-orange-400 italic mt-2">⚠️ File reference missing. Please re-upload.</p>
                                         )}
                                     </div>
                                 ) : (
@@ -617,7 +734,7 @@ export default function ApplicationDetailPage() {
                                 </h3>
                             </div>
                             <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 transition-colors">
-                                <div className="flex flex-wrap gap-2 mb-4">
+                                <div className="flex flex-wrap gap-2">
                                     {app.skill_gaps.map((skill: string, i: number) => (
                                         <span key={i} className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded-lg text-xs font-bold group border border-orange-100 dark:border-orange-800/50">
                                             {skill}
@@ -661,7 +778,7 @@ export default function ApplicationDetailPage() {
                 onClose={() => setShowResumeConfirm(false)}
                 onConfirm={async () => {
                     try {
-                        await removeResume(app.id, app.resume_text)
+                        await removeResume(app.id, app.resume_text || '')
                         toast.success('Resume removed')
                     } catch {
                         toast.error('Failed to remove resume')
@@ -681,9 +798,9 @@ export default function ApplicationDetailPage() {
                                 <div className="w-10 h-10 rounded-xl bg-rose-900/20 flex items-center justify-center text-rose-500">
                                     <FileText size={20} />
                                 </div>
-                                <div>
-                                    <h2 className="text-lg font-bold text-white truncate max-w-[300px]">{app.resume_file_name}</h2>
-                                    <p className="text-xs text-gray-400">Tailored Resume for {app.company}</p>
+                                <div className="min-w-0 flex-1">
+                                    <h2 className="text-sm sm:text-lg font-bold text-white truncate">{app.resume_file_name}</h2>
+                                    <p className="text-[10px] sm:text-xs text-gray-400 truncate">Tailored Resume for {app.company}</p>
                                 </div>
                             </div>
                             <button

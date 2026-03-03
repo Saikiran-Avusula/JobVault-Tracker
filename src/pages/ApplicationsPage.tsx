@@ -236,12 +236,21 @@ export default function ApplicationsPage() {
                                 <p className="text-sm font-medium text-gray-400 truncate mb-4">{app.role}</p>
 
                                 <div className="flex items-center gap-2 mb-6">
-                                    <div className="px-3 py-1 bg-gray-100 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-white/5">
-                                        <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">
-                                            {app.updated_at && app.updated_at !== app.applied_date ? 'Modified: ' : 'Created: '}
-                                            <span className="text-gray-700 dark:text-gray-300">{formatLocalTime(app.updated_at || app.applied_date)}</span>
-                                        </p>
-                                    </div>
+                                    {app.updated_at && app.updated_at !== app.applied_date ? (
+                                        <div className="px-3 py-1.5 bg-gradient-to-r from-orange-500/10 to-orange-500/5 rounded-lg border border-orange-500/20 shadow-sm">
+                                            <p className="text-[9px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-widest whitespace-nowrap flex items-center gap-1">
+                                                <span className="text-xs">✏️</span>
+                                                Modified: <span className="text-orange-700 dark:text-orange-300">{formatLocalTime(app.updated_at)}</span>
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="px-3 py-1.5 bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 rounded-lg border border-emerald-500/20 shadow-sm">
+                                            <p className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest whitespace-nowrap flex items-center gap-1">
+                                                <span className="text-xs">✨</span>
+                                                Created: <span className="text-emerald-700 dark:text-emerald-300">{formatLocalTime(app.applied_date)}</span>
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="flex items-center justify-between pt-4 border-t border-gray-50 dark:border-gray-800">
