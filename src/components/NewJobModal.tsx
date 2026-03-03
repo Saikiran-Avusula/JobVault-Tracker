@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
-import { X, Briefcase, Globe, AlignLeft, FileText } from 'lucide-react'
+import { X, Briefcase, Globe, AlignLeft, FileText, Calendar, Save, Bookmark } from 'lucide-react'
 import { useJobStore } from '../store/useJobStore'
+import { useTemplateStore } from '../store/useTemplateStore'
 import { validateResumeFile } from '../lib/schemas'
 import { handleError } from '../lib/errors'
 import toast from 'react-hot-toast'
@@ -9,13 +10,17 @@ interface Props { open: boolean; onClose: () => void }
 
 export default function NewJobModal({ open, onClose }: Props) {
     const { addApplication } = useJobStore()
+    const { templates, addTemplate } = useTemplateStore()
     const fileInputRef = useRef<HTMLInputElement>(null)
     const [selectedFile, setSelectedFile] = useState<File | null>(null)
+    const [showSaveTemplate, setShowSaveTemplate] = useState(false)
+    const [templateName, setTemplateName] = useState('')
     const [formData, setFormData] = useState({
         company: '',
         role: '',
         status: 'Applied' as const,
         applied_date: new Date().toISOString().split('T')[0],
+        follow_up_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         jd_text: '',
         notes: '',
         application_url: ''
@@ -66,12 +71,38 @@ export default function NewJobModal({ open, onClose }: Props) {
             role: '',
             status: 'Applied',
             applied_date: new Date().toISOString().split('T')[0],
+            follow_up_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
             jd_text: '',
             notes: '',
             application_url: ''
         })
         setSelectedFile(null)
+        setShowSaveTemplate(false)
+        setTemplateName('')
         if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+
+    const handleSaveTemplate = () => {
+        if (!templateName.trim()) {
+            toast.error('Template name is required')
+            return
+        }
+        addTemplate(templateName, formData.jd_text, formData.notes, [])
+        toast.success(`Template "${templateName}" saved!`)
+        setShowSaveTemplate(false)
+        setTemplateName('')
+    }
+
+    const handleLoadTemplate = (templateId: string) => {
+        const template = templates.find(t => t.id === templateId)
+        if (template) {
+            setFormData(prev => ({
+                ...prev,
+                jd_text: template.jd_text,
+                notes: template.notes
+            }))
+            toast.success(`Loaded template "${template.name}"`)
+        }
     }
 
     if (!open) return null
@@ -96,6 +127,22 @@ export default function NewJobModal({ open, onClose }: Props) {
 
                 <form onSubmit={handleSubmit} className="p-0 flex flex-col flex-1 overflow-hidden">
                     <div className="p-8 overflow-y-auto space-y-6 custom-scrollbar">
+                        {templates.length > 0 && (
+                            <div className="flex items-center gap-2 p-4 bg-primary-50 dark:bg-primary-900/20 rounded-xl border border-primary-100 dark:border-primary-800">
+                                <Bookmark size={16} className="text-primary-500" />
+                                <select
+                                    onChange={(e) => e.target.value && handleLoadTemplate(e.target.value)}
+                                    className="flex-1 bg-transparent text-sm font-medium text-gray-700 dark:text-gray-300 outline-none cursor-pointer"
+                                    defaultValue=""
+                                >
+                                    <option value="">Load from template...</option>
+                                    {templates.map(t => (
+                                        <option key={t.id} value={t.id}>{t.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-1.5">
                                 <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
@@ -123,6 +170,20 @@ export default function NewJobModal({ open, onClose }: Props) {
                             </div>
                         </div>
 
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-1.5">
+                                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                                    <Calendar size={12} /> Follow-up Date
+                                </label>
+                                <input
+                                    type="date"
+                                    className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all dark:text-white"
+                                    value={formData.follow_up_date}
+                                    onChange={e => setFormData({ ...formData, follow_up_date: e.target.value })}
+                                />
+                            </div>
+                        </div>
+
                         <div className="space-y-1.5">
                             <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
                                 <Globe size={12} /> Application URL (Optional)
@@ -139,6 +200,16 @@ export default function NewJobModal({ open, onClose }: Props) {
                             <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
                                 <AlignLeft size={12} /> Job Description
                             </label>
+                            <div className="flex items-center justify-between mb-1">
+                                <span></span>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowSaveTemplate(!showSaveTemplate)}
+                                    className="text-xs font-bold text-primary-500 hover:text-primary-600 flex items-center gap-1"
+                                >
+                                    <Save size={12} /> Save as Template
+                                </button>
+                            </div>
                             <textarea
                                 className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all h-40 resize-none dark:text-white"
                                 placeholder="Paste the JD here..."
@@ -146,6 +217,25 @@ export default function NewJobModal({ open, onClose }: Props) {
                                 onChange={e => setFormData({ ...formData, jd_text: e.target.value })}
                             />
                         </div>
+
+                        {showSaveTemplate && (
+                            <div className="flex items-center gap-2 p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
+                                <input
+                                    type="text"
+                                    placeholder="Template name..."
+                                    value={templateName}
+                                    onChange={e => setTemplateName(e.target.value)}
+                                    className="flex-1 px-3 py-2 bg-white dark:bg-gray-800 border border-green-300 dark:border-green-700 rounded-lg text-sm outline-none dark:text-white"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={handleSaveTemplate}
+                                    className="px-4 py-2 bg-green-500 text-white rounded-lg text-xs font-bold hover:bg-green-600 transition-colors"
+                                >
+                                    Save
+                                </button>
+                            </div>
+                        )}
 
                         {/* Resume Selection */}
                         <div className="space-y-4">

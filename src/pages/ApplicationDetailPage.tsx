@@ -8,10 +8,10 @@ import {
 } from 'lucide-react'
 import { useJobStore } from '../store/useJobStore'
 import { formatLocalTime } from '../lib/utils'
-import type { JobStatus } from '../types/job'
+import type { JobApplication, JobStatus } from '../types/job'
 import ConfirmModal from '../components/ConfirmModal'
 import toast from 'react-hot-toast'
-import { getResumeUrl } from '../services/applicationService'
+import { getResumeUrl, fetchApplicationById } from '../services/applicationService'
 
 
 const STAGES: JobStatus[] = ['Applied', 'OA', 'Interview', 'Offer']
@@ -21,11 +21,15 @@ export default function ApplicationDetailPage() {
     const navigate = useNavigate()
     const { applications, loading, updateApplication, moveToTrash, uploadResume, removeResume } = useJobStore()
 
-    const app = applications.find(a => a.id === id)
+    const [app, setApp] = useState<JobApplication | null>(applications.find(a => a.id === id) || null)
     const [isEditingJD, setIsEditingJD] = useState(false)
     const [tempJd, setTempJd] = useState('')
     const [isEditingUrl, setIsEditingUrl] = useState(false)
     const [tempUrl, setTempUrl] = useState('')
+    const [isEditingCompany, setIsEditingCompany] = useState(false)
+    const [tempCompany, setTempCompany] = useState('')
+    const [isEditingRole, setIsEditingRole] = useState(false)
+    const [tempRole, setTempRole] = useState('')
     const [isUploading, setIsUploading] = useState(false)
     const [showPdfViewer, setShowPdfViewer] = useState(false)
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -33,6 +37,25 @@ export default function ApplicationDetailPage() {
     const [localNotes, setLocalNotes] = useState(app?.notes ?? '')
     const [signedResumeUrl, setSignedResumeUrl] = useState<string | null>(null)
     const notesTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+    // Fetch application if not in store
+    useEffect(() => {
+        const loadApp = async () => {
+            if (!id) return
+            const foundInStore = applications.find(a => a.id === id)
+            if (foundInStore) {
+                setApp(foundInStore)
+            } else if (!loading) {
+                try {
+                    const fetchedApp = await fetchApplicationById(id)
+                    setApp(fetchedApp)
+                } catch {
+                    setApp(null)
+                }
+            }
+        }
+        loadApp()
+    }, [id, applications, loading])
 
     // Sync local state when app changes (e.g. navigating between apps)
     useEffect(() => {
@@ -113,31 +136,115 @@ export default function ApplicationDetailPage() {
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 md:gap-8 mb-8 md:mb-12">
                     <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-6">
                         <div className="w-20 h-20 md:w-24 md:h-24 rounded-[2rem] bg-gray-100 dark:bg-gray-800/40 flex items-center justify-center text-4xl md:text-5xl shadow-inner border border-gray-200 dark:border-gray-800 transition-transform hover:scale-105 duration-500 shrink-0">🏢</div>
-                        <div className="min-w-0">
-                            <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white tracking-tight leading-tight truncate">{app.company}</h1>
-                            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 md:gap-3 mt-2">
-                                <p className="text-base md:text-lg font-bold text-gray-500">{app.role}</p>
-                                {app.application_url && (
-                                    <>
-                                        <span className="hidden sm:inline w-1.5 h-1.5 rounded-full bg-gray-800" />
-                                        <a
-                                            href={app.application_url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="flex items-center gap-1.5 text-primary-400 hover:text-primary-300 transition-colors text-sm font-bold"
+                        <div className="min-w-0 w-full">
+                            {isEditingCompany ? (
+                                <div className="flex flex-col gap-2 mb-2">
+                                    <input
+                                        autoFocus
+                                        value={tempCompany}
+                                        onChange={e => setTempCompany(e.target.value)}
+                                        className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 px-4 py-2 rounded-xl border-2 border-primary-500/30 focus:border-primary-500 outline-none"
+                                    />
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => setIsEditingCompany(false)}
+                                            className="px-3 py-1 text-xs font-bold text-gray-400 hover:text-white transition-colors"
                                         >
-                                            <Globe size={14} />
-                                            Visit Link
-                                        </a>
-                                    </>
-                                )}
-                                <span className="hidden sm:inline w-1.5 h-1.5 rounded-full bg-gray-800" />
-                                <div className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-[0.1em]">
-                                    <Clock size={12} className="text-primary-400" />
-                                    {app.updated_at && app.updated_at !== app.applied_date ? 'Modified: ' : 'Applied: '}
-                                    {formatLocalTime(app.updated_at || app.applied_date)}
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                if (tempCompany.trim()) {
+                                                    updateApplication(app.id, { company: tempCompany.trim() })
+                                                    setIsEditingCompany(false)
+                                                    toast.success('Company name updated')
+                                                }
+                                            }}
+                                            className="px-4 py-1 rounded-full bg-primary-500 text-white text-xs font-bold hover:bg-primary-600 transition-colors"
+                                        >
+                                            Save
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
+                            ) : (
+                                <div className="flex items-center gap-2 group">
+                                    <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white tracking-tight leading-tight truncate">{app.company}</h1>
+                                    <button
+                                        onClick={() => {
+                                            setTempCompany(app.company)
+                                            setIsEditingCompany(true)
+                                        }}
+                                        className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-primary-500 transition-all p-1"
+                                    >
+                                        <FileEdit size={18} />
+                                    </button>
+                                </div>
+                            )}
+                            {isEditingRole ? (
+                                <div className="flex flex-col gap-2 mt-2">
+                                    <input
+                                        autoFocus
+                                        value={tempRole}
+                                        onChange={e => setTempRole(e.target.value)}
+                                        className="text-base md:text-lg font-bold text-gray-500 bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-lg border-2 border-primary-500/30 focus:border-primary-500 outline-none"
+                                    />
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => setIsEditingRole(false)}
+                                            className="px-3 py-1 text-xs font-bold text-gray-400 hover:text-white transition-colors"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                if (tempRole.trim()) {
+                                                    updateApplication(app.id, { role: tempRole.trim() })
+                                                    setIsEditingRole(false)
+                                                    toast.success('Role updated')
+                                                }
+                                            }}
+                                            className="px-4 py-1 rounded-full bg-primary-500 text-white text-xs font-bold hover:bg-primary-600 transition-colors"
+                                        >
+                                            Save
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 md:gap-3 mt-2">
+                                    <div className="flex items-center gap-2 group">
+                                        <p className="text-base md:text-lg font-bold text-gray-500">{app.role}</p>
+                                        <button
+                                            onClick={() => {
+                                                setTempRole(app.role)
+                                                setIsEditingRole(true)
+                                            }}
+                                            className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-primary-500 transition-all p-1"
+                                        >
+                                            <FileEdit size={14} />
+                                        </button>
+                                    </div>
+                                    {app.application_url && (
+                                        <>
+                                            <span className="hidden sm:inline w-1.5 h-1.5 rounded-full bg-gray-800" />
+                                            <a
+                                                href={app.application_url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex items-center gap-1.5 text-primary-400 hover:text-primary-300 transition-colors text-sm font-bold"
+                                            >
+                                                <Globe size={14} />
+                                                Visit Link
+                                            </a>
+                                        </>
+                                    )}
+                                    <span className="hidden sm:inline w-1.5 h-1.5 rounded-full bg-gray-800" />
+                                    <div className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-[0.1em]">
+                                        <Clock size={12} className="text-primary-400" />
+                                        {app.updated_at && app.updated_at !== app.applied_date ? 'Modified: ' : 'Applied: '}
+                                        {formatLocalTime(app.updated_at || app.applied_date)}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -205,9 +312,15 @@ export default function ApplicationDetailPage() {
                         <div className="relative mb-6 md:mb-2 mt-4">
                             {/* Background bar */}
                             <div className="absolute top-1/2 left-2 md:left-4 right-2 md:right-4 h-1 md:h-1.5 bg-gray-200 dark:bg-gray-800/80 -translate-y-1/2 rounded-full z-0" />
-                            {/* Fill bar */}
+                            {/* Fill bar - Mobile */}
                             <div
-                                className={`absolute top-1/2 left-2 md:left-4 h-1 md:h-1.5 -translate-y-1/2 rounded-full transition-all duration-1000 ease-out z-0
+                                className={`absolute top-1/2 left-2 h-1 -translate-y-1/2 rounded-full transition-all duration-1000 ease-out z-0 md:hidden
+                                    ${currentStageIndex > 0 ? 'bg-gradient-to-r from-emerald-500 to-primary-500 shadow-[0_0_15px_rgba(59,130,246,0.6)]' : 'bg-primary-500 shadow-[0_0_15px_rgba(59,130,246,0.6)]'}`}
+                                style={{ width: `calc(${(currentStageIndex / (STAGES.length - 1)) * 100}% - 20px)` }}
+                            />
+                            {/* Fill bar - Desktop */}
+                            <div
+                                className={`absolute top-1/2 left-4 h-1.5 -translate-y-1/2 rounded-full transition-all duration-1000 ease-out z-0 hidden md:block
                                     ${currentStageIndex > 0 ? 'bg-gradient-to-r from-emerald-500 to-primary-500 shadow-[0_0_15px_rgba(59,130,246,0.6)]' : 'bg-primary-500 shadow-[0_0_15px_rgba(59,130,246,0.6)]'}`}
                                 style={{ width: `calc(${(currentStageIndex / (STAGES.length - 1)) * 100}% - 32px)` }}
                             />
@@ -230,14 +343,14 @@ export default function ApplicationDetailPage() {
 
                                     return (
                                         <div key={s} className="flex flex-col items-center justify-center z-10 transition-all duration-300 relative">
-                                            <div className={`w-10 h-10 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-all duration-500 border-[3px] md:border-4 bg-white dark:bg-[#020617] relative z-10
+                                            <div className={`w-10 h-10 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-all duration-500 border-[3px] md:border-4 relative z-10
                                                         ${isCompletedOffer
-                                                    ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400 shadow-lg scale-110'
+                                                    ? 'border-emerald-500 bg-white dark:bg-[#020617] text-emerald-600 dark:text-emerald-400 shadow-lg scale-110'
                                                     : isCurr
-                                                        ? 'border-primary-500 bg-primary-500 dark:bg-white text-white dark:text-[#020617] shadow-[0_0_20px_rgba(59,130,246,0.4)] dark:shadow-[0_0_20px_rgba(255,255,255,0.6)] scale-110'
+                                                        ? 'border-primary-500 bg-primary-500 text-white shadow-[0_0_20px_rgba(59,130,246,0.4)] dark:shadow-[0_0_20px_rgba(255,255,255,0.6)] scale-110'
                                                         : isPast
-                                                            ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400 opacity-100'
-                                                            : 'border-gray-200 dark:border-gray-800 text-gray-400 dark:text-gray-600'}`}
+                                                            ? 'border-emerald-500 bg-white dark:bg-[#020617] text-emerald-600 dark:text-emerald-400 opacity-100'
+                                                            : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-[#020617] text-gray-400 dark:text-gray-600'}`}
                                             >
                                                 <Icon className="w-4 h-4 md:w-6 md:h-6 relative z-10" />
                                             </div>

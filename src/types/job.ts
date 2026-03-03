@@ -17,3 +17,12 @@ export interface JobApplication {
     updated_at: string;
     is_trash: boolean;
 }
+
+export interface ApplicationTemplate {
+    id: string;
+    name: string;
+    jd_text: string;
+    notes: string;
+    skill_gaps: string[];
+    created_at: string;
+}

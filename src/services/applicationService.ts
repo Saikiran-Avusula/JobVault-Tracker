@@ -11,14 +11,29 @@ type UpdateInput = z.infer<typeof updateApplicationSchema>
 
 // ─── Queries ────────────────────────────────────────────────
 
-export async function fetchApplications(): Promise<JobApplication[]> {
+export async function fetchApplications(page = 1, pageSize = 20): Promise<{ data: JobApplication[], total: number }> {
+    const from = (page - 1) * pageSize
+    const to = from + pageSize - 1
+
+    const { data, error, count } = await supabase
+        .from('applications')
+        .select('*', { count: 'exact' })
+        .order('updated_at', { ascending: false })
+        .range(from, to)
+
+    if (error) throw new AppError(error.message, 'Failed to load applications.', 'FETCH_ERROR')
+    return { data: data as JobApplication[], total: count || 0 }
+}
+
+export async function fetchApplicationById(id: string): Promise<JobApplication> {
     const { data, error } = await supabase
         .from('applications')
         .select('*')
-        .order('updated_at', { ascending: false })
+        .eq('id', id)
+        .single()
 
-    if (error) throw new AppError(error.message, 'Failed to load applications.', 'FETCH_ERROR')
-    return data as JobApplication[]
+    if (error) throw new AppError(error.message, 'Application not found.', 'FETCH_ERROR')
+    return data as JobApplication
 }
 
 // ─── Mutations ──────────────────────────────────────────────
@@ -120,28 +135,20 @@ export async function uploadResume(applicationId: string, file: File): Promise<s
 
 export async function getResumeUrl(path: string): Promise<string> {
     // Extract the relative storage path from a full public URL if needed
-    // Supabase public URLs look like: .../storage/v1/object/public/resumes/USER_ID/FILE_NAME
     let relativePath = path
     if (path.includes('/resumes/')) {
         relativePath = path.split('/resumes/').pop() || path
     }
 
-    // Try signed URL first (works for private buckets)
-    try {
-        const { data, error } = await supabase.storage
-            .from('resumes')
-            .createSignedUrl(relativePath, 3600) // 1 hour expiry
-        if (!error && data?.signedUrl) return data.signedUrl
-    } catch {
-        // Signed URL failed — bucket is likely public, fall through
-    }
-
-    // Fallback: if the stored path is already a full URL, use it directly
-    if (path.startsWith('http')) return path
-
-    // Last resort: construct a fresh public URL
-    const { data } = supabase.storage.from('resumes').getPublicUrl(relativePath)
-    return data.publicUrl
+    // Always use signed URL for private bucket
+    const { data, error } = await supabase.storage
+        .from('resumes')
+        .createSignedUrl(relativePath, 3600) // 1 hour expiry
+    
+    if (error) throw new AppError(error.message, 'Could not load resume. Please re-upload.', 'RESUME_ACCESS_ERROR')
+    if (!data?.signedUrl) throw new AppError('No signed URL', 'Could not load resume. Please re-upload.', 'RESUME_ACCESS_ERROR')
+    
+    return data.signedUrl
 }
 
 export async function removeResume(applicationId: string, resumeUrl?: string): Promise<void> {

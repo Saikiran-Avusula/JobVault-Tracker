@@ -7,8 +7,11 @@ interface JobState {
     loading: boolean
     searchQuery: string
     statusFilter: JobStatus | 'All'
+    currentPage: number
+    totalPages: number
+    totalCount: number
 
-    fetchApplications: () => Promise<void>
+    fetchApplications: (page?: number) => Promise<void>
     addApplication: (app: Parameters<typeof appService.createApplication>[0]) => Promise<JobApplication>
     updateApplication: (id: string, updates: Partial<JobApplication>) => Promise<void>
     moveToTrash: (id: string, isTrash: boolean) => Promise<void>
@@ -18,6 +21,7 @@ interface JobState {
     removeResume: (id: string, resumeUrl?: string) => Promise<void>
     setSearchQuery: (q: string) => void
     setStatusFilter: (filter: JobStatus | 'All') => void
+    setPage: (page: number) => void
 }
 
 export const useJobStore = create<JobState>()((set, get) => ({
@@ -25,15 +29,19 @@ export const useJobStore = create<JobState>()((set, get) => ({
     loading: true,
     searchQuery: '',
     statusFilter: 'All',
+    currentPage: 1,
+    totalPages: 1,
+    totalCount: 0,
 
-    fetchApplications: async () => {
+    fetchApplications: async (page = 1) => {
         set({ loading: true })
         try {
-            const data = await appService.fetchApplications()
-            set({ applications: data, loading: false })
+            const { data, total } = await appService.fetchApplications(page, 20)
+            const totalPages = Math.ceil(total / 20)
+            set({ applications: data, loading: false, currentPage: page, totalPages, totalCount: total })
         } catch {
             set({ loading: false })
-            throw undefined // re-throw so callers can use handleError
+            throw undefined
         }
     },
 
@@ -96,4 +104,7 @@ export const useJobStore = create<JobState>()((set, get) => ({
 
     setSearchQuery: (q) => set({ searchQuery: q }),
     setStatusFilter: (filter) => set({ statusFilter: filter }),
+    setPage: (page) => {
+        get().fetchApplications(page)
+    },
 }))

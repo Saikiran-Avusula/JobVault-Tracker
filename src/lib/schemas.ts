@@ -25,6 +25,7 @@ export const createApplicationSchema = z.object({
         .default(''),
     status: z.enum(['Applied', 'OA', 'Interview', 'Offer', 'Rejected', 'Ghosted']).default('Applied'),
     applied_date: z.string().default(() => new Date().toISOString()),
+    follow_up_date: z.string().optional(),
     notes: z.string().max(5_000).default(''),
     skill_gaps: z.array(z.string().trim().max(50)).default([]),
     is_trash: z.boolean().default(false),

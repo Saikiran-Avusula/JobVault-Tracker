@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-    LayoutGrid, List, Plus, Trash2, Calendar, FileText, Eye, Briefcase, Target, Code
+    LayoutGrid, List, Plus, Trash2, Calendar, FileText, Eye, Briefcase, Target, Code, ChevronLeft, ChevronRight, Bell
 } from 'lucide-react'
 import { useJobStore } from '../store/useJobStore'
 import { timeAgo, formatLocalTime } from '../lib/utils'
@@ -28,18 +28,30 @@ export default function ApplicationsPage() {
     const [showAddModal, setShowAddModal] = useState(false)
     const [deleteId, setDeleteId] = useState<string | null>(null)
     const [resumeToRemove, setResumeToRemove] = useState<string | null>(null)
-    const { applications, searchQuery, statusFilter, setStatusFilter, moveToTrash, updateApplication, fetchApplications, loading } = useJobStore()
+    const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0)
+    const { applications, searchQuery, statusFilter, setStatusFilter, moveToTrash, updateApplication, fetchApplications, loading, currentPage, totalPages, setPage } = useJobStore()
     const navigate = useNavigate()
 
     const activeApps = applications.filter(a => !a.is_trash)
     const totalApps = activeApps.length
     const activeInterviews = activeApps.filter(a => a.status === 'Interview').length
     const activeOAs = activeApps.filter(a => a.status === 'OA').length
+    const needsFollowUp = activeApps.filter(a => {
+        if (!a.follow_up_date) return false
+        return new Date(a.follow_up_date) <= new Date()
+    }).length
 
 
     useEffect(() => {
         fetchApplications()
     }, [fetchApplications])
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentQuoteIndex((prev) => (prev + 1) % MOTIVATIONAL_QUOTES.length)
+        }, 5000)
+        return () => clearInterval(interval)
+    }, [])
 
     const filtered = activeApps.filter(app => {
         const matchesSearch = app.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -67,20 +79,35 @@ export default function ApplicationsPage() {
 
     return (
         <div className="space-y-8">
-            {/* Motivational Quotes Marquee */}
-            <div className="w-full overflow-hidden bg-primary-500/5 border border-primary-500/10 rounded-2xl py-3 relative group">
-                <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-gray-50 dark:from-[#020617] to-transparent z-10" />
-                <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-gray-50 dark:from-[#020617] to-transparent z-10" />
-                <div className="animate-marquee whitespace-nowrap flex items-center">
-                    {[...MOTIVATIONAL_QUOTES, ...MOTIVATIONAL_QUOTES].map((quote, i) => (
-                        <div key={i} className="flex items-center">
-                            <span className="mx-6 text-xs font-semibold text-primary-600 dark:text-primary-400/80 tracking-wide uppercase">
-                                {quote}
-                            </span>
-                            <span className="text-primary-500/30 text-[10px]">✦</span>
-                        </div>
-                    ))}
+            {/* Motivational Quote Strip */}
+            <div className="relative w-full bg-gradient-to-r from-primary-500/10 via-primary-500/5 to-primary-500/10 border border-primary-500/20 rounded-2xl md:rounded-3xl py-4 md:py-6 px-4 md:px-8 overflow-hidden group">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-500/5 to-transparent animate-pulse" />
+                <button
+                    onClick={() => setCurrentQuoteIndex((prev) => (prev - 1 + MOTIVATIONAL_QUOTES.length) % MOTIVATIONAL_QUOTES.length)}
+                    className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 p-1.5 md:p-2 rounded-full bg-white/50 dark:bg-gray-800/50 text-primary-600 dark:text-primary-400 hover:bg-white dark:hover:bg-gray-800 transition-all opacity-0 group-hover:opacity-100 z-10"
+                >
+                    <ChevronLeft size={16} className="md:hidden" />
+                    <ChevronLeft size={20} className="hidden md:block" />
+                </button>
+                <div className="relative flex flex-col md:flex-row items-center justify-center gap-2 md:gap-4 text-center">
+                    <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-2xl md:text-3xl">💡</span>
+                        <span className="text-[10px] md:text-xs font-black text-primary-600 dark:text-primary-400 uppercase tracking-widest">Daily Motivation</span>
+                    </div>
+                    <div className="h-px md:h-8 w-full md:w-px bg-primary-500/20" />
+                    <div className="flex-1 min-w-0">
+                        <p className="text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-200 leading-relaxed transition-all duration-500 animate-in fade-in slide-in-from-bottom-2" key={currentQuoteIndex}>
+                            {MOTIVATIONAL_QUOTES[currentQuoteIndex]}
+                        </p>
+                    </div>
                 </div>
+                <button
+                    onClick={() => setCurrentQuoteIndex((prev) => (prev + 1) % MOTIVATIONAL_QUOTES.length)}
+                    className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 p-1.5 md:p-2 rounded-full bg-white/50 dark:bg-gray-800/50 text-primary-600 dark:text-primary-400 hover:bg-white dark:hover:bg-gray-800 transition-all opacity-0 group-hover:opacity-100 z-10"
+                >
+                    <ChevronRight size={16} className="md:hidden" />
+                    <ChevronRight size={20} className="hidden md:block" />
+                </button>
             </div>
 
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -133,6 +160,16 @@ export default function ApplicationsPage() {
                 ))}
             </div>
 
+            {needsFollowUp > 0 && (
+                <div className="flex items-center gap-2 p-4 bg-orange-50 dark:bg-orange-900/20 rounded-2xl border border-orange-200 dark:border-orange-800">
+                    <Bell size={20} className="text-orange-500 animate-pulse" />
+                    <div>
+                        <p className="text-sm font-bold text-orange-900 dark:text-orange-100">{needsFollowUp} application{needsFollowUp > 1 ? 's' : ''} need follow-up</p>
+                        <p className="text-xs text-orange-600 dark:text-orange-400">Check your applications below</p>
+                    </div>
+                </div>
+            )}
+
             {/* Filters */}
             <div className="flex items-center gap-3 overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
                 {['All', 'Applied', 'OA', 'Interview', 'Offer', 'Rejected', 'Ghosted'].map((s) => (
@@ -171,6 +208,9 @@ export default function ApplicationsPage() {
                                         <div className="flex flex-col">
                                             <h3 className="font-bold text-gray-900 dark:text-white truncate max-w-[120px]">{app.company}</h3>
                                             <div className="flex items-center gap-1.5">
+                                                {app.follow_up_date && new Date(app.follow_up_date) <= new Date() && (
+                                                    <Bell size={10} className="text-orange-500 animate-pulse" />
+                                                )}
                                                 {app.resume_file_name && (
                                                     <div className="flex items-center gap-1 group/resume-badge">
                                                         <FileText size={10} className="text-primary-500" />
@@ -302,6 +342,41 @@ export default function ApplicationsPage() {
                     </div>
                 )
             }
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-8">
+                    <button
+                        onClick={() => setPage(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    >
+                        <ChevronLeft size={20} />
+                    </button>
+                    <div className="flex items-center gap-2">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                            <button
+                                key={page}
+                                onClick={() => setPage(page)}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                                    currentPage === page
+                                        ? 'bg-primary-500 text-white shadow-lg'
+                                        : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                                }`}
+                            >
+                                {page}
+                            </button>
+                        ))}
+                    </div>
+                    <button
+                        onClick={() => setPage(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    >
+                        <ChevronRight size={20} />
+                    </button>
+                </div>
+            )}
 
             <NewJobModal open={showAddModal} onClose={() => setShowAddModal(false)} />
 
