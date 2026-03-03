@@ -34,9 +34,11 @@ export default function ApplicationDetailPage() {
     const [signedResumeUrl, setSignedResumeUrl] = useState<string | null>(null)
     const notesTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-    // Sync local notes when app changes (e.g. navigating between apps)
+    // Sync local state when app changes (e.g. navigating between apps)
     useEffect(() => {
         setLocalNotes(app?.notes ?? '')
+        setSignedResumeUrl(null)
+        setShowPdfViewer(false)
     }, [app?.id])
 
     const handleNotesChange = useCallback((value: string) => {
@@ -176,7 +178,7 @@ export default function ApplicationDetailPage() {
                 {/* Pipeline Stepper */}
                 {currentStageIndex === -1 ? (
                     // <div className="bg-white dark:bg-[#020617] rounded-[2rem] border border-gray-200 dark:border-white shadow-premium p-5 md:p-8 flex items-center justify-center text-center">
-                        <div className="bg-white dark:bg-[#020617] rounded-[2rem] border border-gray-200 dark:border-white shadow-premium dark:shadow-[0_0_20px_rgba(255,255,255,0.3)] p-5 md:p-8 flex items-center justify-center text-center">
+                    <div className="bg-white dark:bg-[#020617] rounded-[2rem] border border-gray-200 dark:border-white shadow-premium dark:shadow-[0_0_20px_rgba(255,255,255,0.3)] p-5 md:p-8 flex items-center justify-center text-center">
 
                         <div>
                             <div className="w-12 h-12 md:w-20 md:h-20 rounded-full bg-rose-500/10 flex items-center justify-center text-2xl md:text-4xl mx-auto mb-4 md:mb-6 border border-rose-500/20 shadow-[0_0_30px_rgba(244,63,94,0.15)] animate-bounce-slow">💪</div>
@@ -230,15 +232,15 @@ export default function ApplicationDetailPage() {
                                         <div key={s} className="flex flex-col items-center justify-center z-10 transition-all duration-300 relative">
                                             <div className={`w-10 h-10 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-all duration-500 border-[3px] md:border-4 bg-white dark:bg-[#020617] relative z-10
                                                         ${isCompletedOffer
-                                                            ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400 shadow-lg scale-110'
-                                                            : isCurr
-                                                                ? 'border-primary-500 bg-primary-500 dark:bg-white text-white dark:text-[#020617] shadow-[0_0_20px_rgba(59,130,246,0.4)] dark:shadow-[0_0_20px_rgba(255,255,255,0.6)] scale-110'
-                                                                : isPast
-                                                                    ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400 opacity-100'
-                                                                    : 'border-gray-200 dark:border-gray-800 text-gray-400 dark:text-gray-600'}`}
-                                                >
-                                                    <Icon className="w-4 h-4 md:w-6 md:h-6 relative z-10" />
-                                                </div>
+                                                    ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400 shadow-lg scale-110'
+                                                    : isCurr
+                                                        ? 'border-primary-500 bg-primary-500 dark:bg-white text-white dark:text-[#020617] shadow-[0_0_20px_rgba(59,130,246,0.4)] dark:shadow-[0_0_20px_rgba(255,255,255,0.6)] scale-110'
+                                                        : isPast
+                                                            ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400 opacity-100'
+                                                            : 'border-gray-200 dark:border-gray-800 text-gray-400 dark:text-gray-600'}`}
+                                            >
+                                                <Icon className="w-4 h-4 md:w-6 md:h-6 relative z-10" />
+                                            </div>
                                             <div className="absolute -bottom-8 md:-bottom-10 left-1/2 -translate-x-1/2 flex justify-center w-24 md:w-32">
                                                 <span className={`text-[8.5px] md:text-[11px] font-black tracking-widest transition-colors duration-300 text-center
                                                     ${isCompletedOffer ? 'text-emerald-400' : isCurr ? 'text-gray-900 dark:text-white' : isPast ? 'text-emerald-500' : 'text-gray-400 dark:text-gray-600'}`}>
@@ -251,7 +253,7 @@ export default function ApplicationDetailPage() {
                             </div>
                         </div>
                     </div>
-                    
+
                 )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mt-8">
@@ -476,12 +478,10 @@ export default function ApplicationDetailPage() {
                                                             setSignedResumeUrl(url)
                                                             setShowPdfViewer(true)
                                                         } catch {
-                                                            // Fallback: use the direct URL if signed URL fails (public bucket)
-                                                            setSignedResumeUrl(app.resume_text)
-                                                            setShowPdfViewer(true)
+                                                            toast.error('Could not load resume. Please try re-uploading.')
                                                         }
                                                     } else {
-                                                        toast.error('No resume URL found')
+                                                        toast.error('Resume file reference is missing. Please re-upload the resume.')
                                                     }
                                                 }}
                                                 className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-bold text-gray-700 dark:text-white transition-colors mt-2"

@@ -119,19 +119,29 @@ export async function uploadResume(applicationId: string, file: File): Promise<s
 }
 
 export async function getResumeUrl(path: string): Promise<string> {
-    // If the path is already a full URL, we need to extract the relative path
+    // Extract the relative storage path from a full public URL if needed
     // Supabase public URLs look like: .../storage/v1/object/public/resumes/USER_ID/FILE_NAME
     let relativePath = path
     if (path.includes('/resumes/')) {
         relativePath = path.split('/resumes/').pop() || path
     }
 
-    const { data, error } = await supabase.storage
-        .from('resumes')
-        .createSignedUrl(relativePath, 3600) // 1 hour expiry
+    // Try signed URL first (works for private buckets)
+    try {
+        const { data, error } = await supabase.storage
+            .from('resumes')
+            .createSignedUrl(relativePath, 3600) // 1 hour expiry
+        if (!error && data?.signedUrl) return data.signedUrl
+    } catch {
+        // Signed URL failed — bucket is likely public, fall through
+    }
 
-    if (error) throw new AppError(error.message, 'Failed to generate secure link.', 'URL_ERROR')
-    return data.signedUrl
+    // Fallback: if the stored path is already a full URL, use it directly
+    if (path.startsWith('http')) return path
+
+    // Last resort: construct a fresh public URL
+    const { data } = supabase.storage.from('resumes').getPublicUrl(relativePath)
+    return data.publicUrl
 }
 
 export async function removeResume(applicationId: string, resumeUrl?: string): Promise<void> {
