@@ -17,10 +17,3 @@ export interface JobApplication {
     updated_at: string;
     is_trash: boolean;
 }
-
-export interface ActivityLog {
-    id: string;
-    jobId: string;
-    action: string;
-    timestamp: string;
-}

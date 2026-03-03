@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { HardDrive, Eye, EyeOff, ArrowRight } from 'lucide-react'
-import { supabase } from '../lib/supabase'
 import { useAuthStore } from '../store/useAuthStore'
+import * as authService from '../services/authService'
+import { handleError } from '../lib/errors'
 import toast from 'react-hot-toast'
 
 export default function LoginPage() {
@@ -23,33 +24,19 @@ export default function LoginPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!email.trim() || !password.trim() || (isSignUp && !fullName.trim())) {
-            toast.error('Please fill in all fields')
-            return
-        }
         setLoading(true)
 
         try {
             if (isSignUp) {
-                const { error } = await supabase.auth.signUp({
-                    email,
-                    password,
-                    options: {
-                        data: {
-                            full_name: fullName,
-                        }
-                    }
-                })
-                if (error) throw error
+                await authService.signUpWithEmail(email, password, fullName)
                 toast.success('Check your email for confirmation!')
             } else {
-                const { error } = await supabase.auth.signInWithPassword({ email, password })
-                if (error) throw error
+                await authService.signInWithEmail(email, password)
                 toast.success('Welcome back! 👋')
                 navigate('/')
             }
-        } catch (error: any) {
-            toast.error(error.message || 'Authentication failed')
+        } catch (error) {
+            handleError(error)
         } finally {
             setLoading(false)
         }
@@ -57,20 +44,14 @@ export default function LoginPage() {
 
     const handleGoogleLogin = async () => {
         try {
-            const { error } = await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    redirectTo: window.location.origin
-                }
-            })
-            if (error) throw error
-        } catch (error: any) {
-            toast.error(error.message || 'Google login failed')
+            await authService.signInWithGoogle()
+        } catch (error) {
+            handleError(error)
         }
     }
 
     return (
-        <div className="min-h-screen flex bg-[#020617]">
+        <div className="min-h-screen flex bg-gray-50 dark:bg-[#020617]">
             {/* Left panel */}
             <div className="hidden lg:flex lg:w-1/2 flex-col justify-center items-center bg-gradient-to-br from-primary-600 to-primary-800 p-12 text-white relative overflow-hidden">
                 <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
@@ -107,7 +88,7 @@ export default function LoginPage() {
                         <span className="font-bold text-white">JobVault Tracker</span>
                     </div>
 
-                    <h1 className="text-3xl font-black text-white mb-2">{isSignUp ? 'Create account' : 'Welcome back'}</h1>
+                    <h1 className="text-3xl font-black text-gray-900 dark:text-white mb-2">{isSignUp ? 'Create account' : 'Welcome back'}</h1>
                     <p className="text-gray-500 mb-8 font-medium">Step into your career vault</p>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
@@ -118,7 +99,7 @@ export default function LoginPage() {
                                     value={fullName}
                                     onChange={e => setFullName(e.target.value)}
                                     placeholder="Dana Chen"
-                                    className="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-800 text-sm text-white placeholder-gray-600 focus:border-primary-500 transition-all outline-none ring-0"
+                                    className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:border-primary-500 transition-all outline-none ring-0"
                                 />
                             </div>
                         )}
@@ -129,7 +110,7 @@ export default function LoginPage() {
                                 onChange={e => setEmail(e.target.value)}
                                 type="email"
                                 placeholder="dana@example.com"
-                                className="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-800 text-sm text-white placeholder-gray-600 focus:border-primary-500 transition-all outline-none ring-0"
+                                className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:border-primary-500 transition-all outline-none ring-0"
                             />
                         </div>
                         <div>
@@ -140,7 +121,7 @@ export default function LoginPage() {
                                     onChange={e => setPassword(e.target.value)}
                                     type={showPass ? 'text' : 'password'}
                                     placeholder="••••••••"
-                                    className="w-full px-4 py-3 pr-11 rounded-xl bg-gray-900 border border-gray-800 text-sm text-white placeholder-gray-600 focus:border-primary-500 transition-all outline-none ring-0"
+                                    className="w-full px-4 py-3 pr-11 rounded-xl bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:border-primary-500 transition-all outline-none ring-0"
                                 />
                                 <button type="button" onClick={() => setShowPass(s => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
                                     {showPass ? <EyeOff size={17} /> : <Eye size={17} />}
@@ -169,13 +150,13 @@ export default function LoginPage() {
                             <div className="w-full border-t border-gray-800"></div>
                         </div>
                         <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-widest">
-                            <span className="bg-[#020617] px-4 text-gray-500">Or continue with</span>
+                            <span className="bg-gray-50 dark:bg-[#020617] px-4 text-gray-500">Or continue with</span>
                         </div>
                     </div>
 
                     <button
                         onClick={handleGoogleLogin}
-                        className="w-full flex items-center justify-center gap-3 py-3 rounded-xl bg-white text-gray-900 font-bold hover:bg-gray-100 transition-all active:scale-[0.98]"
+                        className="w-full flex items-center justify-center gap-3 py-3 rounded-xl bg-white border border-gray-200 dark:border-transparent text-gray-900 font-bold hover:bg-gray-100 transition-all active:scale-[0.98]"
                     >
                         <svg className="w-5 h-5" viewBox="0 0 24 24">
                             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />

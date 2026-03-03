@@ -16,8 +16,6 @@ export default function App() {
         <Route path="applications/:id" element={<ApplicationDetailPage />} />
         <Route path="trash" element={<TrashPage />} />
         <Route path="profile" element={<ProfilePage />} />
-        <Route path="applied" element={<ApplicationsPage />} />
-        <Route path="interviews" element={<ApplicationsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

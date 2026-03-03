@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-    LayoutGrid, List, Plus, Trash2, Calendar, FileText, Eye, Loader2, Briefcase, Target, Zap, Code
+    LayoutGrid, List, Plus, Trash2, Calendar, FileText, Eye, Briefcase, Target, Code
 } from 'lucide-react'
 import { useJobStore } from '../store/useJobStore'
 import { timeAgo, formatLocalTime } from '../lib/utils'
 import NewJobModal from '../components/NewJobModal'
 import ConfirmModal from '../components/ConfirmModal'
+import { StatsCardSkeleton, ApplicationCardSkeleton } from '../components/ui/Skeleton'
 import toast from 'react-hot-toast'
 
 const MOTIVATIONAL_QUOTES = [
@@ -34,8 +35,7 @@ export default function ApplicationsPage() {
     const totalApps = activeApps.length
     const activeInterviews = activeApps.filter(a => a.status === 'Interview').length
     const activeOAs = activeApps.filter(a => a.status === 'OA').length
-    const responsesCount = activeApps.filter(a => ['OA', 'Interview', 'Offer', 'Rejected'].includes(a.status)).length
-    const responseRate = totalApps > 0 ? Math.round((responsesCount / totalApps) * 100) : 0
+
 
     useEffect(() => {
         fetchApplications()
@@ -50,9 +50,17 @@ export default function ApplicationsPage() {
 
     if (loading && applications.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-40">
-                <Loader2 size={40} className="text-primary-500 animate-spin mb-4" />
-                <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">Syncing with Cloud...</p>
+            <div className="space-y-8 animate-in fade-in duration-500">
+                <div className="grid grid-cols-3 gap-2 md:gap-4">
+                    <StatsCardSkeleton />
+                    <StatsCardSkeleton />
+                    <StatsCardSkeleton />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[...Array(6)].map((_, i) => (
+                        <ApplicationCardSkeleton key={i} />
+                    ))}
+                </div>
             </div>
         )
     }
@@ -61,8 +69,8 @@ export default function ApplicationsPage() {
         <div className="space-y-8">
             {/* Motivational Quotes Marquee */}
             <div className="w-full overflow-hidden bg-primary-500/5 border border-primary-500/10 rounded-2xl py-3 relative group">
-                <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#F8FAFC] dark:from-[#020617] to-transparent z-10" />
-                <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#F8FAFC] dark:from-[#020617] to-transparent z-10" />
+                <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-gray-50 dark:from-[#020617] to-transparent z-10" />
+                <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-gray-50 dark:from-[#020617] to-transparent z-10" />
                 <div className="animate-marquee whitespace-nowrap flex items-center">
                     {[...MOTIVATIONAL_QUOTES, ...MOTIVATIONAL_QUOTES].map((quote, i) => (
                         <div key={i} className="flex items-center">
@@ -78,20 +86,20 @@ export default function ApplicationsPage() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
 
                 <div>
-                    <h1 className="text-3xl font-black text-white tracking-tight">JobVault Tracker</h1>
+                    <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">JobVault Tracker</h1>
                     <p className="text-gray-500 text-sm font-medium">Your career leads, synchronized to the cloud.</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <div className="flex p-1 bg-gray-900 rounded-full border border-gray-800 shadow-sm transition-colors">
+                    <div className="flex p-1 bg-gray-100 dark:bg-gray-900 rounded-full border border-gray-200 dark:border-gray-800 shadow-sm transition-colors">
                         <button
                             onClick={() => setView('grid')}
-                            className={`p-2 rounded-full transition-all ${view === 'grid' ? 'bg-primary-500 text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}
+                            className={`p-2 rounded-full transition-all ${view === 'grid' ? 'bg-primary-500 text-white shadow-md' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
                         >
                             <LayoutGrid size={16} />
                         </button>
                         <button
                             onClick={() => setView('list')}
-                            className={`p-2 rounded-full transition-all ${view === 'list' ? 'bg-primary-500 text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}
+                            className={`p-2 rounded-full transition-all ${view === 'list' ? 'bg-primary-500 text-white shadow-md' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
                         >
                             <List size={16} />
                         </button>
@@ -105,21 +113,21 @@ export default function ApplicationsPage() {
                 </div>
             </div>
 
-            {/* Stats Bar */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Stats Bar — compact on mobile, spacious on desktop */}
+            <div className="grid grid-cols-3 gap-2 md:gap-4">
                 {[
-                    { label: 'Total Applications', value: totalApps, icon: Briefcase, color: 'text-primary-400', bg: 'bg-primary-500/10' },
-                    { label: 'Pending Online Assessments', value: activeOAs, icon: Code, color: 'text-purple-400', bg: 'bg-purple-500/10' },
-                    { label: 'Active Interviews', value: activeInterviews, icon: Target, color: 'text-orange-400', bg: 'bg-orange-500/10' },
-                    { label: 'Response Rate', value: `${responseRate}%`, icon: Zap, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+                    { label: 'Applications', value: totalApps, icon: Briefcase, color: 'text-primary-400', bg: 'bg-primary-500/10' },
+                    { label: 'Pending OAs', value: activeOAs, icon: Code, color: 'text-purple-400', bg: 'bg-purple-500/10' },
+                    { label: 'Interviews', value: activeInterviews, icon: Target, color: 'text-orange-400', bg: 'bg-orange-500/10' },
                 ].map((stat, i) => (
-                    <div key={i} className="bg-[#0c1020]/50 backdrop-blur-xl rounded-3xl border border-white/5 p-6 flex items-center gap-4 group hover:border-white/10 transition-all">
-                        <div className={`w-12 h-12 rounded-2xl ${stat.bg} flex items-center justify-center ${stat.color} group-hover:scale-110 transition-transform`}>
-                            <stat.icon size={24} />
+                    <div key={i} className="bg-white dark:bg-[#0c1020]/50 backdrop-blur-xl rounded-2xl md:rounded-3xl border border-gray-200 dark:border-white/5 p-3 md:p-6 flex flex-col md:flex-row items-center md:items-center gap-1.5 md:gap-4 text-center md:text-left group hover:border-gray-300 dark:hover:border-white/10 transition-all shadow-sm dark:shadow-none">
+                        <div className={`w-9 h-9 md:w-12 md:h-12 rounded-xl md:rounded-2xl ${stat.bg} flex items-center justify-center ${stat.color} group-hover:scale-110 transition-transform shrink-0`}>
+                            <stat.icon size={18} className="md:hidden" />
+                            <stat.icon size={24} className="hidden md:block" />
                         </div>
                         <div>
-                            <p className="text-2xl font-black text-white leading-none">{stat.value}</p>
-                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mt-1.5">{stat.label}</p>
+                            <p className="text-xl md:text-2xl font-black text-gray-900 dark:text-white leading-none">{stat.value}</p>
+                            <p className="text-[8px] md:text-[10px] font-black text-gray-500 uppercase tracking-wider md:tracking-widest mt-0.5 md:mt-1.5">{stat.label}</p>
                         </div>
                     </div>
                 ))}
@@ -134,7 +142,7 @@ export default function ApplicationsPage() {
                         className={`px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300 border-none outline-none ring-0
               ${statusFilter === s
                                 ? 'bg-primary-500 text-white shadow-float scale-105'
-                                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`}
+                                : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
                     >
                         {s}
                     </button>
@@ -144,9 +152,9 @@ export default function ApplicationsPage() {
             {/* Content */}
             {
                 filtered.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 bg-gray-900 rounded-3xl border border-dashed border-gray-800 transition-colors">
-                        <div className="w-16 h-16 bg-gray-800 rounded-2xl flex items-center justify-center text-2xl mb-4">📂</div>
-                        <h3 className="font-bold text-white">No applications found</h3>
+                    <div className="flex flex-col items-center justify-center py-20 bg-gray-100 dark:bg-gray-900 rounded-3xl border border-dashed border-gray-300 dark:border-gray-800 transition-colors">
+                        <div className="w-16 h-16 bg-gray-200 dark:bg-gray-800 rounded-2xl flex items-center justify-center text-2xl mb-4">📂</div>
+                        <h3 className="font-bold text-gray-900 dark:text-white">No applications found</h3>
                         <p className="text-gray-500 text-sm mt-1">Try changing your filters or add a new job.</p>
                     </div>
                 ) : view === 'grid' ? (
@@ -155,11 +163,11 @@ export default function ApplicationsPage() {
                             <div
                                 key={app.id}
                                 onClick={() => navigate(`/applications/${app.id}`)}
-                                className="bg-gray-900 p-6 rounded-[2rem] border border-gray-800 shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-2xl hover:shadow-primary-500/10 hover:-translate-y-1 active:scale-[0.98] active:bg-gray-800/80 transition-all cursor-pointer group relative overflow-hidden"
+                                className="bg-white dark:bg-gray-900 p-6 rounded-[2rem] border border-gray-200 dark:border-gray-800 shadow-card dark:shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-2xl hover:shadow-primary-500/10 hover:-translate-y-1 active:scale-[0.98] active:bg-gray-50 dark:active:bg-gray-800/80 transition-all cursor-pointer group relative overflow-hidden"
                             >
                                 <div className="flex items-start justify-between mb-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-12 h-12 rounded-2xl bg-gray-800 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">🏢</div>
+                                        <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">🏢</div>
                                         <div className="flex flex-col">
                                             <h3 className="font-bold text-gray-900 dark:text-white truncate max-w-[120px]">{app.company}</h3>
                                             <div className="flex items-center gap-1.5">
@@ -188,10 +196,10 @@ export default function ApplicationsPage() {
                                 <p className="text-sm font-medium text-gray-400 truncate mb-4">{app.role}</p>
 
                                 <div className="flex items-center gap-2 mb-6">
-                                    <div className="px-3 py-1 bg-gray-800/50 rounded-lg border border-white/5">
+                                    <div className="px-3 py-1 bg-gray-100 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-white/5">
                                         <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest whitespace-nowrap">
                                             {app.updated_at && app.updated_at !== app.applied_date ? 'Modified: ' : 'Created: '}
-                                            <span className="text-gray-300">{formatLocalTime(app.updated_at || app.applied_date)}</span>
+                                            <span className="text-gray-700 dark:text-gray-300">{formatLocalTime(app.updated_at || app.applied_date)}</span>
                                         </p>
                                     </div>
                                 </div>

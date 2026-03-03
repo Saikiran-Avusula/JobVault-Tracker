@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
     ChevronLeft, Trash2,
@@ -11,6 +11,7 @@ import { formatLocalTime } from '../lib/utils'
 import type { JobStatus } from '../types/job'
 import ConfirmModal from '../components/ConfirmModal'
 import toast from 'react-hot-toast'
+import { getResumeUrl } from '../services/applicationService'
 
 
 const STAGES: JobStatus[] = ['Applied', 'OA', 'Interview', 'Offer']
@@ -18,7 +19,7 @@ const STAGES: JobStatus[] = ['Applied', 'OA', 'Interview', 'Offer']
 export default function ApplicationDetailPage() {
     const { id } = useParams()
     const navigate = useNavigate()
-    const { applications, loading, updateApplication, moveToTrash, uploadResume } = useJobStore()
+    const { applications, loading, updateApplication, moveToTrash, uploadResume, removeResume } = useJobStore()
 
     const app = applications.find(a => a.id === id)
     const [isEditingJD, setIsEditingJD] = useState(false)
@@ -29,6 +30,22 @@ export default function ApplicationDetailPage() {
     const [showPdfViewer, setShowPdfViewer] = useState(false)
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
     const [showResumeConfirm, setShowResumeConfirm] = useState(false)
+    const [localNotes, setLocalNotes] = useState(app?.notes ?? '')
+    const [signedResumeUrl, setSignedResumeUrl] = useState<string | null>(null)
+    const notesTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+    // Sync local notes when app changes (e.g. navigating between apps)
+    useEffect(() => {
+        setLocalNotes(app?.notes ?? '')
+    }, [app?.id])
+
+    const handleNotesChange = useCallback((value: string) => {
+        setLocalNotes(value)
+        if (notesTimerRef.current) clearTimeout(notesTimerRef.current)
+        notesTimerRef.current = setTimeout(() => {
+            updateApplication(app!.id, { notes: value })
+        }, 600)
+    }, [app?.id, updateApplication])
 
     if (loading) {
         return (
@@ -66,10 +83,10 @@ export default function ApplicationDetailPage() {
     return (
         <div className="max-w-5xl mx-auto space-y-6 pb-20">
             {/* Header */}
-            <div className="sticky top-0 z-30 bg-[#020617]/95 backdrop-blur-md py-3 -mx-4 px-4 mb-4 flex items-center justify-between border-b border-gray-800/50 md:relative md:top-auto md:bg-transparent md:p-0 md:m-0 md:mb-8 md:border-none">
+            <div className="sticky top-0 z-30 bg-white/95 dark:bg-[#020617]/95 backdrop-blur-md py-3 -mx-4 px-4 mb-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-800/50 md:relative md:top-auto md:bg-transparent md:p-0 md:m-0 md:mb-8 md:border-none">
                 <button
                     onClick={() => navigate(-1)}
-                    className="flex items-center gap-1.5 px-4 py-2 md:px-5 md:py-2.5 rounded-full text-xs md:text-sm font-black uppercase tracking-wider bg-gray-900 border border-gray-800 text-gray-400 hover:text-primary-500 transition-all shadow-sm"
+                    className="flex items-center gap-1.5 px-4 py-2 md:px-5 md:py-2.5 rounded-full text-xs md:text-sm font-black uppercase tracking-wider bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:text-primary-500 transition-all shadow-sm"
                 >
                     <ChevronLeft size={16} /> Back
                 </button>
@@ -90,12 +107,12 @@ export default function ApplicationDetailPage() {
                 confirmText="Move to Trash"
             />
 
-            <div className="bg-[#020617] rounded-[2.5rem] border border-gray-800/50 shadow-premium p-6 md:p-10 transition-colors">
+            <div className="bg-white dark:bg-[#020617] rounded-[2.5rem] border border-gray-200 dark:border-gray-800/50 shadow-premium p-6 md:p-10 transition-colors">
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 md:gap-8 mb-8 md:mb-12">
                     <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-6">
-                        <div className="w-20 h-20 md:w-24 md:h-24 rounded-[2rem] bg-gray-800/40 flex items-center justify-center text-4xl md:text-5xl shadow-inner border border-gray-800 transition-transform hover:scale-105 duration-500 shrink-0">🏢</div>
+                        <div className="w-20 h-20 md:w-24 md:h-24 rounded-[2rem] bg-gray-100 dark:bg-gray-800/40 flex items-center justify-center text-4xl md:text-5xl shadow-inner border border-gray-200 dark:border-gray-800 transition-transform hover:scale-105 duration-500 shrink-0">🏢</div>
                         <div className="min-w-0">
-                            <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight leading-tight truncate">{app.company}</h1>
+                            <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white tracking-tight leading-tight truncate">{app.company}</h1>
                             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 md:gap-3 mt-2">
                                 <p className="text-base md:text-lg font-bold text-gray-500">{app.role}</p>
                                 {app.application_url && (
@@ -122,18 +139,31 @@ export default function ApplicationDetailPage() {
                         </div>
                     </div>
 
-                    <div className="flex flex-col items-center md:items-end gap-6 overflow-hidden">
-                        <div className="flex items-center gap-1.5 p-1.5 bg-gray-800/30 rounded-full border border-gray-800 overflow-x-auto max-w-full scrollbar-hide no-scrollbar">
+                </div>
+
+                {/* Status Switcher - Mobile-first: 2-row grid on mobile, single row on desktop */}
+                <div className="mb-8 md:mb-10">
+                    <div className="flex items-center gap-2 mb-3">
+                        <div className="h-px flex-1 bg-gray-100 dark:bg-gray-800/50" />
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] whitespace-nowrap">Current Status</span>
+                        <div className="h-px flex-1 bg-gray-100 dark:bg-gray-800/50" />
+                    </div>
+
+                    <div className="p-1.5 bg-gray-50 dark:bg-gray-900/50 rounded-2xl md:rounded-3xl border border-gray-100 dark:border-gray-800/50 shadow-sm">
+                        <div className="grid grid-cols-3 md:flex md:items-center gap-1">
                             {['Applied', 'OA', 'Interview', 'Offer', 'Rejected', 'Ghosted'].map((s) => {
                                 const isSel = currentStatus === s
+                                const isNegative = s === 'Rejected' || s === 'Ghosted'
                                 return (
                                     <button
                                         key={s}
                                         onClick={() => handleUpdateStatus(s as any)}
-                                        className={`px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest transition-all duration-300 border-none outline-none ring-0 whitespace-nowrap
+                                        className={`md:flex-1 px-3 md:px-6 py-2 md:py-2.5 rounded-xl md:rounded-2xl text-[10px] md:text-[11px] font-black uppercase tracking-wider md:tracking-widest transition-all duration-300 whitespace-nowrap text-center
                                             ${isSel
-                                                ? 'bg-gray-700 text-primary-400 shadow-float'
-                                                : 'text-gray-500 hover:text-gray-200'}`}
+                                                ? isNegative
+                                                    ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20'
+                                                    : 'bg-primary-500 text-white shadow-lg shadow-primary-500/20'
+                                                : 'text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/5'}`}
                                     >
                                         {s}
                                     </button>
@@ -145,10 +175,12 @@ export default function ApplicationDetailPage() {
 
                 {/* Pipeline Stepper */}
                 {currentStageIndex === -1 ? (
-                    <div className="bg-[#020617] rounded-[2rem] border border-rose-500/20 shadow-premium p-5 md:p-8 flex items-center justify-center text-center">
+                    // <div className="bg-white dark:bg-[#020617] rounded-[2rem] border border-gray-200 dark:border-white shadow-premium p-5 md:p-8 flex items-center justify-center text-center">
+                        <div className="bg-white dark:bg-[#020617] rounded-[2rem] border border-gray-200 dark:border-white shadow-premium dark:shadow-[0_0_20px_rgba(255,255,255,0.3)] p-5 md:p-8 flex items-center justify-center text-center">
+
                         <div>
                             <div className="w-12 h-12 md:w-20 md:h-20 rounded-full bg-rose-500/10 flex items-center justify-center text-2xl md:text-4xl mx-auto mb-4 md:mb-6 border border-rose-500/20 shadow-[0_0_30px_rgba(244,63,94,0.15)] animate-bounce-slow">💪</div>
-                            <h3 className="text-xl md:text-2xl font-black text-white mb-2 md:mb-3">Every "No" Brings You Closer to a "Yes"</h3>
+                            <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white mb-2 md:mb-3">Every "No" Brings You Closer to a "Yes"</h3>
                             <p className="text-xs md:text-sm text-gray-400 max-w-lg mx-auto leading-relaxed">
                                 Resilience is the most important skill in your career. Don't let this outcome define your journey. Take a breath, dust yourself off, and crack the next one! You've got this.
                             </p>
@@ -159,7 +191,7 @@ export default function ApplicationDetailPage() {
                     </div>
                 ) : (
                     // Job Progress
-                    <div className="bg-[#020617] rounded-[2rem] border border-gray-800/50 shadow-premium p-5 md:p-10 overflow-hidden relative group">
+                    <div className="bg-white dark:bg-[#020617] rounded-[2rem] border border-gray-200 dark:border-gray-800/50 shadow-premium p-5 md:p-10 overflow-hidden relative group">
                         <div className="flex items-center justify-between mb-8 md:mb-12">
                             <h3 className="text-[10px] md:text-[11px] uppercase font-black tracking-[0.2em] text-gray-400">Job Progress</h3>
                             <div className="flex items-baseline gap-1 bg-primary-500/10 px-3 py-1 md:px-4 md:py-1.5 rounded-full border border-primary-500/20">
@@ -170,7 +202,7 @@ export default function ApplicationDetailPage() {
 
                         <div className="relative mb-6 md:mb-2 mt-4">
                             {/* Background bar */}
-                            <div className="absolute top-1/2 left-2 md:left-4 right-2 md:right-4 h-1 md:h-1.5 bg-gray-800/80 -translate-y-1/2 rounded-full z-0" />
+                            <div className="absolute top-1/2 left-2 md:left-4 right-2 md:right-4 h-1 md:h-1.5 bg-gray-200 dark:bg-gray-800/80 -translate-y-1/2 rounded-full z-0" />
                             {/* Fill bar */}
                             <div
                                 className={`absolute top-1/2 left-2 md:left-4 h-1 md:h-1.5 -translate-y-1/2 rounded-full transition-all duration-1000 ease-out z-0
@@ -196,21 +228,20 @@ export default function ApplicationDetailPage() {
 
                                     return (
                                         <div key={s} className="flex flex-col items-center justify-center z-10 transition-all duration-300 relative">
-                                            <div
-                                                className={`w-10 h-10 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-all duration-500 border-[3px] md:border-4 bg-[#020617] relative z-10
-                                                    ${isCompletedOffer
-                                                        ? 'border-emerald-500 text-emerald-400 shadow-[0_0_25px_rgba(16,185,129,0.5)] ring-[3px] md:ring-4 ring-emerald-500/20 scale-110'
-                                                        : isCurr
-                                                            ? 'border-primary-500 text-white shadow-[0_0_25px_rgba(59,130,246,0.5)] ring-[3px] md:ring-4 ring-primary-500/20 scale-110'
-                                                            : isPast
-                                                                ? 'border-emerald-500 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
-                                                                : 'border-gray-800 text-gray-700'}`}
-                                            >
-                                                <Icon className={`w-4 h-4 md:w-6 md:h-6 relative z-10 ${isCurr || isCompletedOffer ? 'drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]' : isPast ? 'drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]' : ''}`} />
-                                            </div>
+                                            <div className={`w-10 h-10 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-all duration-500 border-[3px] md:border-4 bg-white dark:bg-[#020617] relative z-10
+                                                        ${isCompletedOffer
+                                                            ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400 shadow-lg scale-110'
+                                                            : isCurr
+                                                                ? 'border-primary-500 bg-primary-500 dark:bg-white text-white dark:text-[#020617] shadow-[0_0_20px_rgba(59,130,246,0.4)] dark:shadow-[0_0_20px_rgba(255,255,255,0.6)] scale-110'
+                                                                : isPast
+                                                                    ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400 opacity-100'
+                                                                    : 'border-gray-200 dark:border-gray-800 text-gray-400 dark:text-gray-600'}`}
+                                                >
+                                                    <Icon className="w-4 h-4 md:w-6 md:h-6 relative z-10" />
+                                                </div>
                                             <div className="absolute -bottom-8 md:-bottom-10 left-1/2 -translate-x-1/2 flex justify-center w-24 md:w-32">
                                                 <span className={`text-[8.5px] md:text-[11px] font-black tracking-widest transition-colors duration-300 text-center
-                                                    ${isCompletedOffer ? 'text-emerald-400' : isCurr ? 'text-white' : isPast ? 'text-emerald-500' : 'text-gray-600'}`}>
+                                                    ${isCompletedOffer ? 'text-emerald-400' : isCurr ? 'text-gray-900 dark:text-white' : isPast ? 'text-emerald-500' : 'text-gray-400 dark:text-gray-600'}`}>
                                                     {s.toUpperCase()}
                                                 </span>
                                             </div>
@@ -220,9 +251,10 @@ export default function ApplicationDetailPage() {
                             </div>
                         </div>
                     </div>
+                    
                 )}
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mt-8">
                     <div className="space-y-8">
                         {/* JD */}
                         <section>
@@ -281,7 +313,7 @@ export default function ApplicationDetailPage() {
                                     placeholder="Paste job description here..."
                                 />
                             ) : (
-                                <div className="bg-gray-900 rounded-2xl p-5 text-sm text-gray-300 leading-relaxed whitespace-pre-wrap font-mono min-h-[200px] border border-gray-800 transition-colors break-words overflow-hidden">
+                                <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-5 text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap font-mono min-h-[200px] border border-gray-200 dark:border-gray-800 transition-colors break-words overflow-hidden">
                                     {app.jd_text || 'No description provided.'}
                                 </div>
                             )}
@@ -297,7 +329,7 @@ export default function ApplicationDetailPage() {
                                     <Globe size={14} /> Application URL
                                 </h3>
                             </div>
-                            <div className="bg-gray-900 rounded-2xl p-5 border border-gray-800 transition-colors">
+                            <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-5 border border-gray-200 dark:border-gray-800 transition-colors">
                                 {isEditingUrl ? (
                                     <div className="flex flex-col gap-3">
                                         <input
@@ -415,32 +447,46 @@ export default function ApplicationDetailPage() {
                                     />
                                 </label>
                             </div>
-                            <div className="bg-gray-900 rounded-2xl p-5 border border-gray-800 transition-colors">
+                            <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-5 border border-gray-200 dark:border-gray-800 transition-colors">
                                 {app.resume_file_name ? (
                                     <div className="flex flex-col gap-3">
-                                        <div className="flex items-center gap-3 p-3 bg-gray-800 rounded-xl border border-gray-700 shadow-sm group/resume">
-                                            <div className="w-10 h-10 rounded-lg bg-rose-900/20 flex items-center justify-center text-rose-500 shrink-0">
+                                        <div className="flex items-center gap-3 p-3 bg-gray-100 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm group/resume">
+                                            <div className="w-10 h-10 rounded-lg bg-rose-100 dark:bg-rose-900/20 flex items-center justify-center text-rose-500 shrink-0">
                                                 <FileText size={20} />
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-semibold text-white truncate">{app.resume_file_name}</p>
+                                                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{app.resume_file_name}</p>
                                                 <p className="text-[11px] text-gray-400 uppercase font-bold tracking-tighter">Uploaded Resume</p>
                                             </div>
                                             <button
                                                 onClick={() => setShowResumeConfirm(true)}
-                                                className="p-2 rounded-lg text-gray-500 hover:text-rose-500 hover:bg-rose-500/10 transition-all opacity-0 group-hover/resume:opacity-100 shrink-0"
+                                                className="p-2 rounded-lg text-gray-500 hover:text-rose-500 hover:bg-rose-500/10 transition-all md:opacity-0 md:group-hover/resume:opacity-100 shrink-0"
                                                 title="Remove Resume"
                                             >
                                                 <Trash2 size={16} />
                                             </button>
                                         </div>
 
-                                        {app.resume_text && app.resume_text.startsWith('http') && (
+                                        {app.resume_file_name && (
                                             <button
-                                                onClick={() => setShowPdfViewer(true)}
-                                                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-xl text-sm font-bold text-white transition-colors mt-2"
+                                                onClick={async () => {
+                                                    if (app.resume_text) {
+                                                        try {
+                                                            const url = await getResumeUrl(app.resume_text)
+                                                            setSignedResumeUrl(url)
+                                                            setShowPdfViewer(true)
+                                                        } catch {
+                                                            // Fallback: use the direct URL if signed URL fails (public bucket)
+                                                            setSignedResumeUrl(app.resume_text)
+                                                            setShowPdfViewer(true)
+                                                        }
+                                                    } else {
+                                                        toast.error('No resume URL found')
+                                                    }
+                                                }}
+                                                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-bold text-gray-700 dark:text-white transition-colors mt-2"
                                             >
-                                                <FileText size={16} /> View Document
+                                                <FileText size={16} /> View Resume
                                             </button>
                                         )}
                                     </div>
@@ -457,7 +503,7 @@ export default function ApplicationDetailPage() {
                                     <Tag size={14} /> Skill Gaps to Close
                                 </h3>
                             </div>
-                            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5 transition-colors">
+                            <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 transition-colors">
                                 <div className="flex flex-wrap gap-2 mb-4">
                                     {app.skill_gaps.map((skill: string, i: number) => (
                                         <span key={i} className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded-lg text-xs font-bold group border border-orange-100 dark:border-orange-800/50">
@@ -480,8 +526,8 @@ export default function ApplicationDetailPage() {
                             <textarea
                                 className="w-full p-5 bg-gray-50 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800 rounded-2xl text-sm text-gray-700 dark:text-gray-300 outline-none focus:ring-2 focus:ring-primary-500/10 focus:border-primary-500 transition-all min-h-[150px] resize-none"
                                 placeholder="Add recruiter info, questions asked, or impressions..."
-                                value={app.notes}
-                                onChange={(e) => updateApplication(app.id, { notes: e.target.value })}
+                                value={localNotes}
+                                onChange={(e) => handleNotesChange(e.target.value)}
                             />
                         </section>
                     </div>
@@ -500,9 +546,13 @@ export default function ApplicationDetailPage() {
             <ConfirmModal
                 open={showResumeConfirm}
                 onClose={() => setShowResumeConfirm(false)}
-                onConfirm={() => {
-                    updateApplication(app.id, { resume_file_name: undefined, resume_text: undefined })
-                    toast.success('Resume removed')
+                onConfirm={async () => {
+                    try {
+                        await removeResume(app.id, app.resume_text)
+                        toast.success('Resume removed')
+                    } catch {
+                        toast.error('Failed to remove resume')
+                    }
                 }}
                 title="Remove Resume?"
                 description={`This will remove the tailored resume for ${app.company}. You can upload a new one at any time.`}
@@ -531,11 +581,17 @@ export default function ApplicationDetailPage() {
                             </button>
                         </div>
                         <div className="flex-1 bg-gray-950 p-4">
-                            <iframe
-                                src={app.resume_text}
-                                className="w-full h-full rounded-xl bg-white"
-                                title="Resume PDF Viewer"
-                            />
+                            {signedResumeUrl ? (
+                                <iframe
+                                    src={signedResumeUrl}
+                                    className="w-full h-full rounded-xl bg-white"
+                                    title="Resume PDF Viewer"
+                                />
+                            ) : (
+                                <div className="flex items-center justify-center h-full text-gray-500">
+                                    Loading secure document...
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

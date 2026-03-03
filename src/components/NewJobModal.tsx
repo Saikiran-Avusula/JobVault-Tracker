@@ -1,20 +1,22 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { X, Briefcase, Globe, AlignLeft, FileText } from 'lucide-react'
 import { useJobStore } from '../store/useJobStore'
+import { validateResumeFile } from '../lib/schemas'
+import { handleError } from '../lib/errors'
 import toast from 'react-hot-toast'
 
 interface Props { open: boolean; onClose: () => void }
 
 export default function NewJobModal({ open, onClose }: Props) {
     const { addApplication } = useJobStore()
+    const fileInputRef = useRef<HTMLInputElement>(null)
+    const [selectedFile, setSelectedFile] = useState<File | null>(null)
     const [formData, setFormData] = useState({
         company: '',
         role: '',
         status: 'Applied' as const,
         applied_date: new Date().toISOString().split('T')[0],
         jd_text: '',
-        resume_text: '',
-        resume_file_name: '',
         notes: '',
         application_url: ''
     })
@@ -22,47 +24,54 @@ export default function NewJobModal({ open, onClose }: Props) {
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (file) {
-            setFormData({ ...formData, resume_file_name: file.name })
-            toast.success(`Selected: ${file.name}`)
+            const validation = validateResumeFile(file)
+            if (!validation.success) {
+                toast.error(validation.error)
+                if (fileInputRef.current) fileInputRef.current.value = ''
+                return
+            }
+            setSelectedFile(file)
+            toast.success(`Selected resume: ${file.name}`)
         }
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!formData.company || !formData.role) {
-            toast.error('Company and Role are required')
-            return
-        }
 
         try {
-            const payload = {
+            // 1. Create the application record
+            const created = await addApplication({
                 ...formData,
+                resume_text: '', // Placeholder, will be updated if file is uploaded
                 skill_gaps: [],
                 is_trash: false
+            })
+
+            // 2. Upload file if selected
+            if (selectedFile) {
+                await useJobStore.getState().uploadResume(created.id, selectedFile)
             }
 
-            // Remove empty strings for optional fields to avoid DB constraint errors
-            if (!payload.application_url?.trim()) {
-                delete (payload as any).application_url
-            }
-
-            await addApplication(payload)
             toast.success(`Application for ${formData.company} added!`)
             onClose()
-            setFormData({
-                company: '',
-                role: '',
-                status: 'Applied',
-                applied_date: new Date().toISOString().split('T')[0],
-                jd_text: '',
-                resume_text: '',
-                resume_file_name: '',
-                notes: '',
-                application_url: ''
-            })
+            reset()
         } catch (error) {
-            toast.error('Failed to add application')
+            handleError(error)
         }
+    }
+
+    const reset = () => {
+        setFormData({
+            company: '',
+            role: '',
+            status: 'Applied',
+            applied_date: new Date().toISOString().split('T')[0],
+            jd_text: '',
+            notes: '',
+            application_url: ''
+        })
+        setSelectedFile(null)
+        if (fileInputRef.current) fileInputRef.current.value = ''
     }
 
     if (!open) return null
@@ -149,22 +158,23 @@ export default function NewJobModal({ open, onClose }: Props) {
                                         <div>
                                             <p className="text-sm font-bold text-gray-900 dark:text-white">Upload Tailored Resume</p>
                                             <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">
-                                                {formData.resume_file_name || 'Select the PDF version sent for this role'}
+                                                {selectedFile?.name || 'Select the PDF version sent for this role'}
                                             </p>
                                         </div>
                                     </div>
                                     <input
                                         type="file"
                                         id="resume-upload"
+                                        ref={fileInputRef}
                                         className="hidden"
-                                        accept=".pdf,.doc,.docx"
+                                        accept=".pdf"
                                         onChange={handleFileChange}
                                     />
                                     <label
                                         htmlFor="resume-upload"
                                         className="px-5 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all cursor-pointer shadow-sm hover:shadow-md"
                                     >
-                                        {formData.resume_file_name ? 'Change' : 'Browse'}
+                                        {selectedFile ? 'Change' : 'Browse'}
                                     </label>
                                 </div>
                             </div>

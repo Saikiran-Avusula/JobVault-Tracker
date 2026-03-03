@@ -2,10 +2,11 @@ import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import {
     FolderOpen, ChevronLeft, ChevronRight,
-    Plus, Briefcase, LogOut, Trash2
+    Plus, Briefcase, LogOut, Trash2, Sun, Moon
 } from 'lucide-react'
 import { useAuthStore } from '../../store/useAuthStore'
 import { useJobStore } from '../../store/useJobStore'
+import { useThemeStore } from '../../store/useThemeStore'
 import NewJobModal from '../NewJobModal'
 
 const NAV_ITEMS = [
@@ -18,6 +19,7 @@ export default function SideNavigation() {
     const [showNewJob, setShowNewJob] = useState(false)
     const { user, signOut } = useAuthStore()
     const { applications } = useJobStore()
+    const { theme, toggleTheme } = useThemeStore()
     const navigate = useNavigate()
 
     const activeApplications = applications.filter(a => !a.is_trash)
@@ -28,14 +30,14 @@ export default function SideNavigation() {
     return (
         <>
             <aside
-                className={`flex flex-col h-full bg-[#0c0c0c] border-r border-gray-800 transition-all duration-200 shrink-0 ${collapsed ? 'w-16' : 'w-64'}`}
+                className={`flex flex-col h-full bg-white dark:bg-[#0c0c0c] border-r border-gray-200 dark:border-gray-800 transition-all duration-200 shrink-0 ${collapsed ? 'w-16' : 'w-64'}`}
             >
                 {/* Logo */}
                 <div className="flex items-center gap-3 px-3 py-4">
                     <div className="w-8 h-8 rounded-lg bg-primary-500 flex items-center justify-center text-white shadow-lg shadow-primary-500/20">
                         <Briefcase size={18} />
                     </div>
-                    {!collapsed && <span className="font-bold text-white text-[15px]">JobVault Tracker</span>}
+                    {!collapsed && <span className="font-bold text-gray-900 dark:text-white text-[15px]">JobVault Tracker</span>}
                 </div>
 
                 <div className={`px-3 mt-4 ${collapsed ? 'flex justify-center' : ''}`}>
@@ -81,7 +83,7 @@ export default function SideNavigation() {
                                         <div className="relative">
                                             <Icon size={17} className={isActive ? 'text-primary-400' : 'text-gray-400 group-hover:text-gray-300'} />
                                             {isTrash && hasTrash && (
-                                                <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-[#0c0c0c]" />
+                                                <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white dark:ring-[#0c0c0c]" />
                                             )}
                                         </div>
                                         {!collapsed && label}
@@ -110,28 +112,48 @@ export default function SideNavigation() {
                             </div>
                         </div>
                     )}
+
+                    {/* Theme Toggle */}
+                    <div className={`mt-4 px-2 ${collapsed ? 'flex justify-center' : ''}`}>
+                        <button
+                            onClick={toggleTheme}
+                            className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors group w-full
+                                text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/60 hover:text-gray-700 dark:hover:text-gray-200
+                                ${collapsed ? 'justify-center' : ''}`}
+                            title={collapsed ? (theme === 'dark' ? 'Light Mode' : 'Dark Mode') : undefined}
+                        >
+                            {theme === 'dark' ? (
+                                <Sun size={17} className="text-amber-400" />
+                            ) : (
+                                <Moon size={17} className="text-indigo-500" />
+                            )}
+                            {!collapsed && (theme === 'dark' ? 'Light Mode' : 'Dark Mode')}
+                        </button>
+                    </div>
                 </nav>
 
                 {/* Storage + User */}
-                <div className="border-t border-gray-800 px-3 py-3">
+                <div className="border-t border-gray-200 dark:border-gray-800 px-3 py-3">
                     {!collapsed && (
                         <div className="mb-3">
                             <div className="flex justify-between text-[10px] text-gray-500 mb-1 font-bold uppercase tracking-tighter">
                                 <span>Free Tier Limit</span>
                                 <span>{activeApplications.length} / 100</span>
+                                </div>
+                                {/* Background of the bar track */}
+                                <div className="h-1.5 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
+                                    {/* The actual progress bar */}
+                                    <div
+                                        className="h-full rounded-full bg-primary-500 dark:bg-white transition-all shadow-[0_0_8px_rgba(59,130,246,0.3)] dark:shadow-[0_0_12px_rgba(255,255,255,0.6)]"
+                                        style={{ width: `${usedPct}%` }}
+                                        />
+                                </div>
                             </div>
-                            <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                                <div
-                                    className="h-full rounded-full bg-primary-500 transition-all shadow-[0_0_8px_rgba(59,130,246,0.3)]"
-                                    style={{ width: `${usedPct}%` }}
-                                />
-                            </div>
-                        </div>
-                    )}
+                        )}
                     <div className={`flex items-center gap-2 ${collapsed ? 'justify-center flex-col gap-2' : ''}`}>
                         <div
                             onClick={() => navigate('/profile')}
-                            className="w-8 h-8 rounded-full bg-primary-900/30 flex items-center justify-center text-primary-400 text-xs font-bold shrink-0 cursor-pointer hover:ring-2 hover:ring-primary-500/50 transition-all shadow-lg"
+                            className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 dark:text-primary-400 text-xs font-bold shrink-0 cursor-pointer hover:ring-2 hover:ring-primary-500/50 transition-all shadow-lg"
                         >
                             {user?.user_metadata?.full_name
                                 ? user.user_metadata.full_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
@@ -139,7 +161,7 @@ export default function SideNavigation() {
                         </div>
                         {!collapsed && (
                             <div className="flex-1 min-w-0">
-                                <p className="text-xs font-semibold text-white truncate">
+                                <p className="text-xs font-semibold text-gray-900 dark:text-white truncate">
                                     {user?.user_metadata?.full_name || 'User'}
                                 </p>
                                 <p className="text-[11px] text-gray-500 truncate">{user?.email}</p>
@@ -148,7 +170,7 @@ export default function SideNavigation() {
                         {!collapsed && (
                             <button
                                 onClick={handleLogout}
-                                className="p-1.5 rounded hover:bg-gray-800 text-gray-400 hover:text-rose-500 transition-colors"
+                                className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-rose-500 transition-colors"
                                 title="Logout"
                             >
                                 <LogOut size={14} />
@@ -156,6 +178,7 @@ export default function SideNavigation() {
                         )}
                     </div>
                 </div>
+
 
                 {/* Collapse toggle */}
                 <button

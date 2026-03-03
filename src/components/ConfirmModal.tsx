@@ -23,12 +23,12 @@ export default function ConfirmModal({
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-[#0c1020] w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl border border-white/5 animate-in zoom-in-95 duration-200">
-                <div className={`w-20 h-20 ${type === 'danger' ? 'bg-rose-500/10 text-rose-500' : 'bg-amber-500/10 text-amber-500'} rounded-3xl flex items-center justify-center mb-6 mx-auto border border-white/5`}>
+            <div className="bg-white dark:bg-[#0c1020] w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl border border-gray-200 dark:border-white/5 animate-in zoom-in-95 duration-200">
+                <div className={`w-20 h-20 ${type === 'danger' ? 'bg-rose-500/10 text-rose-500' : 'bg-amber-500/10 text-amber-500'} rounded-3xl flex items-center justify-center mb-6 mx-auto border border-gray-200 dark:border-white/5`}>
                     {type === 'danger' ? <Trash2 size={36} /> : <AlertCircle size={36} />}
                 </div>
 
-                <h3 className="text-2xl font-black text-white text-center mb-2 tracking-tight">{title}</h3>
+                <h3 className="text-2xl font-black text-gray-900 dark:text-white text-center mb-2 tracking-tight">{title}</h3>
                 <p className="text-gray-500 font-medium text-center text-sm mb-8 px-4 leading-relaxed">
                     {description}
                 </p>
@@ -36,7 +36,7 @@ export default function ConfirmModal({
                 <div className="flex gap-4">
                     <button
                         onClick={onClose}
-                        className="flex-1 px-6 py-3 rounded-full text-xs font-black text-gray-500 hover:text-white hover:bg-white/5 transition-all uppercase tracking-widest"
+                        className="flex-1 px-6 py-3 rounded-full text-xs font-black text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-all uppercase tracking-widest"
                     >
                         Cancel
                     </button>

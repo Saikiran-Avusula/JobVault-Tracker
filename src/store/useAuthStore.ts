@@ -2,14 +2,14 @@ import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
 import type { User } from '@supabase/supabase-js'
 
-interface AuthStore {
+interface AuthState {
     user: User | null
     loading: boolean
     setUser: (user: User | null) => void
     signOut: () => Promise<void>
 }
 
-export const useAuthStore = create<AuthStore>((set) => ({
+export const useAuthStore = create<AuthState>()((set) => ({
     user: null,
     loading: true,
     setUser: (user) => set({ user, loading: false }),
@@ -19,7 +19,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
     },
 }))
 
-// Initialize listener
+// Listen to auth state changes
 supabase.auth.onAuthStateChange((_event, session) => {
     useAuthStore.getState().setUser(session?.user ?? null)
 })
