@@ -30,6 +30,8 @@ export default function ApplicationDetailPage() {
     const [tempCompany, setTempCompany] = useState('')
     const [isEditingRole, setIsEditingRole] = useState(false)
     const [tempRole, setTempRole] = useState('')
+    const [isEditingLocation, setIsEditingLocation] = useState(false)
+    const [tempLocation, setTempLocation] = useState('')
     const [isUploading, setIsUploading] = useState(false)
     const [showPdfViewer, setShowPdfViewer] = useState(false)
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -223,6 +225,52 @@ export default function ApplicationDetailPage() {
                                             <FileEdit size={14} />
                                         </button>
                                     </div>
+                                    {isEditingLocation ? (
+                                        <>
+                                            <span className="hidden md:inline w-1.5 h-1.5 rounded-full bg-gray-800" />
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    autoFocus
+                                                    value={tempLocation}
+                                                    onChange={e => setTempLocation(e.target.value)}
+                                                    placeholder="e.g. Remote"
+                                                    className="text-xs font-medium text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-lg border border-primary-500/30 focus:border-primary-500 outline-none w-32"
+                                                />
+                                                <button
+                                                    onClick={() => setIsEditingLocation(false)}
+                                                    className="text-xs text-gray-400 hover:text-white"
+                                                >
+                                                    ✕
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        updateApplication(app.id, { location: tempLocation.trim() || undefined })
+                                                        setIsEditingLocation(false)
+                                                        toast.success('Location updated')
+                                                    }}
+                                                    className="text-xs text-primary-500 hover:text-primary-400"
+                                                >
+                                                    ✓
+                                                </button>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span className="hidden md:inline w-1.5 h-1.5 rounded-full bg-gray-800" />
+                                            <div className="flex items-center gap-1.5 group/location">
+                                                <span className="text-sm font-medium text-gray-400">📍 {app.location || 'Add location'}</span>
+                                                <button
+                                                    onClick={() => {
+                                                        setTempLocation(app.location || '')
+                                                        setIsEditingLocation(true)
+                                                    }}
+                                                    className="opacity-0 group-hover/location:opacity-100 text-gray-400 hover:text-primary-500 transition-all p-1"
+                                                >
+                                                    <FileEdit size={12} />
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
                                     {app.application_url && (
                                         <>
                                             <span className="hidden md:inline w-1.5 h-1.5 rounded-full bg-gray-800" />

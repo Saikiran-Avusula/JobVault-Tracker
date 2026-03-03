@@ -29,6 +29,8 @@ export default function ApplicationsPage() {
     const [deleteId, setDeleteId] = useState<string | null>(null)
     const [resumeToRemove, setResumeToRemove] = useState<string | null>(null)
     const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0)
+    const [sortBy, setSortBy] = useState<'date' | 'company' | 'status'>('date')
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
     const { applications, searchQuery, statusFilter, setStatusFilter, moveToTrash, updateApplication, fetchApplications, loading, currentPage, totalPages, setPage } = useJobStore()
     const navigate = useNavigate()
 
@@ -59,6 +61,27 @@ export default function ApplicationsPage() {
         const matchesStatus = statusFilter === 'All' || app.status === statusFilter
         return matchesSearch && matchesStatus
     })
+
+    const sorted = [...filtered].sort((a, b) => {
+        let comparison = 0
+        if (sortBy === 'date') {
+            comparison = new Date(b.applied_date).getTime() - new Date(a.applied_date).getTime()
+        } else if (sortBy === 'company') {
+            comparison = a.company.localeCompare(b.company)
+        } else if (sortBy === 'status') {
+            comparison = a.status.localeCompare(b.status)
+        }
+        return sortOrder === 'asc' ? comparison : -comparison
+    })
+
+    const handleSort = (column: 'date' | 'company' | 'status') => {
+        if (sortBy === column) {
+            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+        } else {
+            setSortBy(column)
+            setSortOrder('desc')
+        }
+    }
 
     if (loading && applications.length === 0) {
         return (
@@ -188,7 +211,7 @@ export default function ApplicationsPage() {
 
             {/* Content */}
             {
-                filtered.length === 0 ? (
+                sorted.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 bg-gray-100 dark:bg-gray-900 rounded-3xl border border-dashed border-gray-300 dark:border-gray-800 transition-colors">
                         <div className="w-16 h-16 bg-gray-200 dark:bg-gray-800 rounded-2xl flex items-center justify-center text-2xl mb-4">📂</div>
                         <h3 className="font-bold text-gray-900 dark:text-white">No applications found</h3>
@@ -196,7 +219,7 @@ export default function ApplicationsPage() {
                     </div>
                 ) : view === 'grid' ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {filtered.map(app => (
+                        {sorted.map(app => (
                             <div
                                 key={app.id}
                                 onClick={() => navigate(`/applications/${app.id}`)}
@@ -269,85 +292,109 @@ export default function ApplicationsPage() {
                         ))}
                     </div>
                 ) : (
-                    <div className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 overflow-hidden transition-colors">
-                        <table className="w-full text-left">
-                            <thead className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-700">
-                                <tr>
-                                    <th className="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Company & Role</th>
-                                    <th className="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Status</th>
-                                    <th className="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Applied Date</th>
-                                    <th className="px-6 py-4 text-right pr-12 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
-                                {filtered.map(app => (
-                                    <tr
-                                        key={app.id}
-                                        onClick={() => navigate(`/applications/${app.id}`)}
-                                        className="hover:bg-gray-50 dark:hover:bg-gray-800/30 cursor-pointer transition-colors"
-                                    >
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-lg bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-sm">🏢</div>
-                                                <div>
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="text-sm font-bold text-gray-900 dark:text-white">{app.company}</div>
-                                                        {app.resume_file_name && (
-                                                            <FileText size={12} className="text-primary-500" />
-                                                        )}
-                                                    </div>
-                                                    <div className="text-[11px] text-gray-400">{app.role}</div>
-                                                </div>
+                    <div className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 overflow-hidden transition-colors shadow-sm">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left">
+                                <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-800/30 border-b-2 border-gray-200 dark:border-gray-700">
+                                    <tr>
+                                        <th className="px-6 py-4 text-[11px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:text-primary-500 transition-colors" onClick={() => handleSort('status')}>
+                                            <div className="flex items-center gap-2">
+                                                Status
+                                                {sortBy === 'status' && <span className="text-primary-500">{sortOrder === 'asc' ? '↑' : '↓'}</span>}
                                             </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold
-                      ${app.status === 'Offer' ? 'bg-success-50 text-success-700' :
-                                                    app.status === 'Rejected' ? 'bg-danger-50 text-danger-700' :
-                                                        'bg-primary-50 dark:bg-primary-900/30 text-primary-600'}`}>
-                                                {app.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-xs text-gray-500 dark:text-gray-400">
-                                            {new Date(app.applied_date).toLocaleDateString()}
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex items-center justify-end gap-2 pr-6">
-                                                {app.resume_file_name && (
-                                                    <div className="flex items-center gap-1">
+                                        </th>
+                                        <th className="px-6 py-4 text-[11px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:text-primary-500 transition-colors" onClick={() => handleSort('company')}>
+                                            <div className="flex items-center gap-2">
+                                                Company & Role
+                                                {sortBy === 'company' && <span className="text-primary-500">{sortOrder === 'asc' ? '↑' : '↓'}</span>}
+                                            </div>
+                                        </th>
+                                        <th className="px-6 py-4 text-[11px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider">Location</th>
+                                        <th className="px-6 py-4 text-[11px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:text-primary-500 transition-colors" onClick={() => handleSort('date')}>
+                                            <div className="flex items-center gap-2">
+                                                Applied
+                                                {sortBy === 'date' && <span className="text-primary-500">{sortOrder === 'asc' ? '↑' : '↓'}</span>}
+                                            </div>
+                                        </th>
+                                        <th className="px-6 py-4 text-[11px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider">Last Updated</th>
+                                        <th className="px-6 py-4 text-right pr-8 text-[11px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                                    {sorted.map(app => (
+                                        <tr
+                                            key={app.id}
+                                            onClick={() => navigate(`/applications/${app.id}`)}
+                                            className="hover:bg-gray-50 dark:hover:bg-gray-800/30 cursor-pointer transition-all group"
+                                        >
+                                            <td className="px-6 py-4">
+                                                <StatusPill status={app.status} />
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">🏢</div>
+                                                    <div>
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="text-sm font-bold text-gray-900 dark:text-white">{app.company}</div>
+                                                            {app.resume_file_name && (
+                                                                <FileText size={12} className="text-primary-500" title="Resume uploaded" />
+                                                            )}
+                                                            {app.follow_up_date && new Date(app.follow_up_date) <= new Date() && (
+                                                                <Bell size={12} className="text-orange-500 animate-pulse" title="Follow-up needed" />
+                                                            )}
+                                                        </div>
+                                                        <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">{app.role}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">{app.location || '—'}</span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex flex-col gap-1">
+                                                    <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">{new Date(app.applied_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                                    <span className="text-[10px] text-gray-400 font-medium">{timeAgo(app.applied_date)}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                {app.updated_at && app.updated_at !== app.applied_date ? (
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className="text-xs font-semibold text-orange-600 dark:text-orange-400">{new Date(app.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                                                        <span className="text-[10px] text-gray-400 font-medium">{timeAgo(app.updated_at)}</span>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-xs text-gray-400">—</span>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <div className="flex items-center justify-end gap-2 pr-2">
+                                                    {app.resume_file_name && (
                                                         <button
                                                             onClick={(e) => { e.stopPropagation(); navigate(`/applications/${app.id}`) }}
-                                                            className="p-1.5 rounded-lg text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
-                                                            title="View Resume"
+                                                            className="p-2 rounded-lg text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all"
+                                                            title="View Details"
                                                         >
-                                                            <Eye size={14} />
+                                                            <Eye size={16} />
                                                         </button>
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); setResumeToRemove(app.id) }}
-                                                            className="p-1.5 rounded-lg text-gray-400 hover:text-rose-500 hover:bg-rose-500/10 transition-all"
-                                                            title="Remove Resume"
-                                                        >
-                                                            <Trash2 size={14} />
-                                                        </button>
-                                                    </div>
-                                                )}
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        moveToTrash(app.id, true)
-                                                        toast.success(`${app.company} moved to Trash`)
-                                                    }}
-                                                    className="p-1.5 rounded-lg text-gray-400 hover:text-rose-500 transition-colors"
-                                                    title="Move to Trash"
-                                                >
-                                                    <Trash2 size={14} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                                    )}
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation()
+                                                            moveToTrash(app.id, true)
+                                                            toast.success(`${app.company} moved to Trash`)
+                                                        }}
+                                                        className="p-2 rounded-lg text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all"
+                                                        title="Move to Trash"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 )
             }

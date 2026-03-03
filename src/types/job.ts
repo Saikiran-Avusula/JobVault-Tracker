@@ -5,6 +5,7 @@ export interface JobApplication {
     user_id: string;
     company: string;
     role: string;
+    location?: string;
     status: JobStatus;
     applied_date: string;
     follow_up_date?: string;

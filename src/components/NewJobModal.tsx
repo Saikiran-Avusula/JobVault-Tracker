@@ -18,6 +18,7 @@ export default function NewJobModal({ open, onClose }: Props) {
     const [formData, setFormData] = useState({
         company: '',
         role: '',
+        location: '',
         status: 'Applied' as const,
         applied_date: new Date().toISOString().split('T')[0],
         follow_up_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
@@ -69,6 +70,7 @@ export default function NewJobModal({ open, onClose }: Props) {
         setFormData({
             company: '',
             role: '',
+            location: '',
             status: 'Applied',
             applied_date: new Date().toISOString().split('T')[0],
             follow_up_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
@@ -168,6 +170,18 @@ export default function NewJobModal({ open, onClose }: Props) {
                                     onChange={e => setFormData({ ...formData, role: e.target.value })}
                                 />
                             </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                                📍 Location
+                            </label>
+                            <input
+                                className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all dark:text-white"
+                                placeholder="e.g. San Francisco, CA or Remote"
+                                value={formData.location}
+                                onChange={e => setFormData({ ...formData, location: e.target.value })}
+                            />
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
