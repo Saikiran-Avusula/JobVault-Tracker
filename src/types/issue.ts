@@ -1,5 +1,6 @@
 export type IssueArea = 'ui' | 'backend' | 'database' | 'feature_request' | 'other'
 export type IssueSeverity = 'low' | 'medium' | 'high'
+export type IssueStatus = 'open' | 'in_progress' | 'in_review' | 'resolved'
 
 export interface IssueReport {
     id: string
@@ -10,6 +11,9 @@ export interface IssueReport {
     description: string
     page_path: string | null
     contact_email: string | null
-    status: 'open' | 'in_review' | 'resolved'
+    attachment_path: string | null
+    status: IssueStatus
+    admin_message: string | null
     created_at: string
+    updated_at: string
 }

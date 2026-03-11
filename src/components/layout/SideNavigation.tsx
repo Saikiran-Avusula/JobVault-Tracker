@@ -7,6 +7,7 @@ import {
 import { useAuthStore } from '../../store/useAuthStore'
 import { useJobStore } from '../../store/useJobStore'
 import { useThemeStore } from '../../store/useThemeStore'
+import { isAdminEmail } from '../../services/issueService'
 import NewJobModal from '../NewJobModal'
 
 const NAV_ITEMS = [
@@ -22,6 +23,7 @@ export default function SideNavigation() {
     const { applications } = useJobStore()
     const { theme, toggleTheme } = useThemeStore()
     const navigate = useNavigate()
+    const isAdmin = isAdminEmail(user?.email)
 
     const activeApplications = applications.filter(a => !a.is_trash)
     const trashedApplications = applications.filter(a => a.is_trash)
@@ -68,6 +70,7 @@ export default function SideNavigation() {
                         const isTrash = to === '/trash'
                         const isReportIssue = to === '/report-issue'
                         const hasTrash = trashedApplications.length > 0
+                        const resolvedLabel = isReportIssue && isAdmin ? 'Admin Report Issues' : label
 
                         return (
                             <NavLink
@@ -90,7 +93,7 @@ export default function SideNavigation() {
                                     }
                                     return {}
                                 }}
-                                title={collapsed ? label : undefined}
+                                title={collapsed ? resolvedLabel : undefined}
                             >
                                 {({ isActive }) => (
                                     <>
@@ -110,7 +113,7 @@ export default function SideNavigation() {
                                                 <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white dark:ring-[#0c0c0c]" />
                                             )}
                                         </div>
-                                        {!collapsed && label}
+                                        {!collapsed && resolvedLabel}
                                     </>
                                 )}
                             </NavLink>

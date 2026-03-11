@@ -69,12 +69,20 @@ export const issueReportSchema = z.object({
     description: z.string().trim().min(20, 'Please add more detail (minimum 20 characters)').max(5000, 'Description is too long'),
     page_path: z.string().trim().max(255).optional().or(z.literal('')),
     contact_email: z.string().trim().email('Enter a valid contact email').optional().or(z.literal('')),
+    attachment_path: z.string().trim().max(500).optional().or(z.literal('')),
+})
+
+export const issueStatusUpdateSchema = z.object({
+    status: z.enum(['open', 'in_progress', 'in_review', 'resolved']),
+    admin_message: z.string().trim().max(2000, 'Admin message is too long').optional().or(z.literal('')),
 })
 
 // ─── File Validation ────────────────────────────────────────
 
 const MAX_RESUME_SIZE = 5 * 1024 * 1024 // 5MB
 const ALLOWED_RESUME_TYPES = ['application/pdf']
+const MAX_ISSUE_IMAGE_SIZE = 5 * 1024 * 1024
+const ALLOWED_ISSUE_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp']
 
 export function validateResumeFile(file: File): { success: true } | { success: false; error: string } {
     if (!ALLOWED_RESUME_TYPES.includes(file.type)) {
@@ -82,6 +90,16 @@ export function validateResumeFile(file: File): { success: true } | { success: f
     }
     if (file.size > MAX_RESUME_SIZE) {
         return { success: false, error: 'File size must be less than 5MB' }
+    }
+    return { success: true }
+}
+
+export function validateIssueImageFile(file: File): { success: true } | { success: false; error: string } {
+    if (!ALLOWED_ISSUE_IMAGE_TYPES.includes(file.type)) {
+        return { success: false, error: 'Only PNG, JPG, JPEG, or WEBP images are allowed' }
+    }
+    if (file.size > MAX_ISSUE_IMAGE_SIZE) {
+        return { success: false, error: 'Image size must be less than 5MB' }
     }
     return { success: true }
 }
