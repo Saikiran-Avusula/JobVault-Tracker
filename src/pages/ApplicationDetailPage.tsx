@@ -172,12 +172,12 @@ export default function ApplicationDetailPage() {
     }
 
     return (
-        <div className="max-w-5xl mx-auto space-y-6 pb-20">
+        <div className="max-w-5xl mx-auto space-y-5 md:space-y-6 pb-20">
             {/* Header */}
-            <div className="sticky top-0 z-30 backdrop-blur-md py-3 -mx-4 px-4 mb-4 flex items-center justify-between border-b border-white/10 md:relative md:top-auto md:bg-transparent md:p-0 md:m-0 md:mb-8 md:border-none">
+            <div className="sticky top-0 z-30 bg-white/75 dark:bg-[#060816]/80 backdrop-blur-md py-3 -mx-4 px-4 mb-4 flex items-center justify-between gap-3 border-b border-black/5 dark:border-white/10 md:relative md:top-auto md:bg-transparent md:p-0 md:m-0 md:mb-8 md:border-none">
                 <button
                     onClick={() => navigate(-1)}
-                    className="glass-button flex items-center gap-1.5 px-4 py-2 md:px-5 md:py-2.5 text-xs md:text-sm font-black uppercase tracking-wider text-glass-tertiary"
+                    className="glass-button flex items-center gap-1.5 px-4 py-2 md:px-5 md:py-2.5 text-xs md:text-sm font-black uppercase tracking-wider text-gray-700 dark:text-glass-tertiary"
                 >
                     <ChevronLeft size={16} strokeWidth={1.5} /> Back
                 </button>
@@ -188,11 +188,11 @@ export default function ApplicationDetailPage() {
                 >
                     <Trash2 size={16} strokeWidth={1.5} className="text-white" />
                     <span className="hidden sm:inline text-white dark:text-white">Delete Application</span>
-                    <span className="sm:hidden text-black dark:text-white">Delete</span>
+                    <span className="sm:hidden text-white dark:text-white">Delete</span>
                 </button>
             </div>
 
-            <div className="glass-panel p-6 md:p-10">
+            <div className="glass-panel p-5 md:p-10">
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 md:gap-8 mb-8 md:mb-12">
                     <div className="flex flex-col items-center md:flex-row md:items-start text-center md:text-left gap-6 w-full">
                         <div className="w-20 h-20 md:w-24 md:h-24 flex items-center justify-center text-4xl md:text-5xl shadow-inner border border-white/10 transition-transform hover:scale-105 duration-500 shrink-0" style={{ borderRadius: 'var(--radius-xl)', backdropFilter: 'var(--glass-blur-xs)', background: 'var(--glass-fill-light)' }}>🏢</div>
@@ -208,7 +208,7 @@ export default function ApplicationDetailPage() {
                                     <div className="flex items-center gap-2 justify-center md:justify-start">
                                         <button
                                             onClick={() => setIsEditingCompany(false)}
-                                            className="px-3 py-1 text-xs font-bold text-gray-400 hover:text-white transition-colors"
+                                            className="px-3 py-1 text-xs font-bold text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                                         >
                                             Cancel
                                         </button>
@@ -228,13 +228,13 @@ export default function ApplicationDetailPage() {
                                 </div>
                             ) : (
                                 <div className="flex items-center justify-center md:justify-start gap-2 group">
-                                    <h1 className="text-3xl md:text-4xl font-black text-glass-primary tracking-tight leading-tight truncate">{app.company}</h1>
+                                    <h1 className="text-3xl md:text-4xl font-black text-glass-primary tracking-tight leading-tight break-words">{app.company}</h1>
                                     <button
                                         onClick={() => {
                                             setTempCompany(app.company)
                                             setIsEditingCompany(true)
                                         }}
-                                        className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-primary-500 transition-all p-1"
+                                        className="opacity-100 md:opacity-0 md:group-hover:opacity-100 text-gray-400 hover:text-primary-500 transition-all p-1 shrink-0"
                                     >
                                         <FileEdit size={18} />
                                     </button>
@@ -272,13 +272,13 @@ export default function ApplicationDetailPage() {
                             ) : (
                                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 md:gap-3 mt-2">
                                     <div className="flex items-center gap-2 group">
-                                        <p className="text-base md:text-lg font-bold text-glass-secondary">{app.role}</p>
+                                        <p className="text-base md:text-lg font-bold text-gray-700 dark:text-glass-secondary">{app.role}</p>
                                         <button
                                             onClick={() => {
                                                 setTempRole(app.role)
                                                 setIsEditingRole(true)
                                             }}
-                                            className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-primary-500 transition-all p-1"
+                                            className="opacity-100 md:opacity-0 md:group-hover:opacity-100 text-gray-400 hover:text-primary-500 transition-all p-1 shrink-0"
                                         >
                                             <FileEdit size={14} />
                                         </button>
@@ -296,7 +296,7 @@ export default function ApplicationDetailPage() {
                                                 />
                                                 <button
                                                     onClick={() => setIsEditingLocation(false)}
-                                                    className="text-xs text-gray-400 hover:text-white"
+                                                    className="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                                                 >
                                                     ✕
                                                 </button>
@@ -316,13 +316,13 @@ export default function ApplicationDetailPage() {
                                         <>
                                             <span className="hidden md:inline w-1.5 h-1.5 rounded-full bg-gray-800" />
                                             <div className="flex items-center gap-1.5 group/location">
-                                                <span className="text-sm font-medium text-gray-400">📍 {app.location || 'Add location'}</span>
+                                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">📍 {app.location || 'Add location'}</span>
                                                 <button
                                                     onClick={() => {
                                                         setTempLocation(app.location || '')
                                                         setIsEditingLocation(true)
                                                     }}
-                                                    className="opacity-0 group-hover/location:opacity-100 text-gray-400 hover:text-primary-500 transition-all p-1"
+                                                    className="opacity-100 md:opacity-0 md:group-hover/location:opacity-100 text-gray-400 hover:text-primary-500 transition-all p-1 shrink-0"
                                                 >
                                                     <FileEdit size={12} />
                                                 </button>
@@ -377,7 +377,7 @@ export default function ApplicationDetailPage() {
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
                         <div className="flex items-center gap-2">
                             <div className="h-px w-10 md:w-14 bg-gray-100 dark:bg-gray-800/50" />
-                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] whitespace-nowrap">Current Status</span>
+                            <span className="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-[0.2em] whitespace-nowrap">Current Status</span>
                         </div>
 
                         <div ref={statusMenuRef} className="relative w-full md:w-auto md:min-w-[290px]">
@@ -431,7 +431,7 @@ export default function ApplicationDetailPage() {
                             <h3 className="text-xl md:text-2xl font-black text-glass-primary mb-2 md:mb-3">
                                 {currentStatus === 'Ghosted' ? 'No Response Yet' : 'This Outcome Is Not Final'}
                             </h3>
-                            <p className="text-xs md:text-sm text-glass-secondary max-w-lg mx-auto leading-relaxed">
+                            <p className="text-xs md:text-sm text-gray-700 dark:text-glass-secondary max-w-lg mx-auto leading-relaxed">
                                 {currentStatus === 'Ghosted'
                                     ? 'No reply is frustrating, but it does not reduce your value. Close this loop, keep momentum, and focus on better opportunities.'
                                     : 'Rejection is part of the process. Capture what you learned, refine your approach, and move to the next opportunity with confidence.'}
@@ -579,7 +579,7 @@ export default function ApplicationDetailPage() {
                     // Job Progress
                     <div className="bg-white dark:bg-[#020617] rounded-[2rem] border border-gray-200 dark:border-gray-800/50 shadow-premium p-5 md:p-10 overflow-hidden relative group">
                         <div className="flex items-center justify-between mb-8 md:mb-12">
-                            <h3 className="text-[10px] md:text-[11px] uppercase font-black tracking-[0.2em] text-gray-400">Job Progress</h3>
+                                <h3 className="text-[10px] md:text-[11px] uppercase font-black tracking-[0.2em] text-gray-600 dark:text-gray-400">Job Progress</h3>
                             <div className="flex items-baseline gap-1 bg-primary-500/10 px-3 py-1 md:px-4 md:py-1.5 rounded-full border border-primary-500/20">
                                 <span className="text-base md:text-lg font-black text-primary-400">{Math.round(((currentStageIndex + 1) / STAGES.length) * 100)}</span>
                                 <span className="text-[10px] md:text-xs font-bold text-primary-500 uppercase tracking-widest">% Completed</span>
@@ -647,16 +647,16 @@ export default function ApplicationDetailPage() {
 
                 )}
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mt-8">
-                    <div className="space-y-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-10 mt-8">
+                    <div className="space-y-6 md:space-y-8">
                         {/* JD */}
                         <section>
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                                <h3 className="flex items-center gap-2 text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                                     <AlignLeft size={14} /> Job Description
                                 </h3>
                                 {isEditingJD ? (
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-3 self-start sm:self-auto">
                                         <button
                                             onClick={() => setIsEditingJD(false)}
                                             className="text-[11px] font-bold text-gray-500 hover:text-gray-300 uppercase tracking-widest"
@@ -708,7 +708,7 @@ export default function ApplicationDetailPage() {
                             ) : (
                             <div className="glass-input p-5 text-sm text-glass-primary leading-relaxed whitespace-pre-wrap font-mono min-h-[200px] break-words overflow-hidden">
                                     {app.jd_text ? app.jd_text : (
-                                        <span className="text-glass-tertiary italic">No job description added yet. Click Edit to add one.</span>
+                                        <span className="text-gray-500 dark:text-glass-tertiary italic">No job description added yet. Click Edit to add one.</span>
                                     )}
                                 </div>
                             )}
@@ -716,11 +716,11 @@ export default function ApplicationDetailPage() {
 
                     </div>
 
-                    <div className="space-y-8">
+                    <div className="space-y-6 md:space-y-8">
                         {/* Application URL */}
                         <section>
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                                <h3 className="flex items-center gap-2 text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                                     <Globe size={14} /> Application URL
                                 </h3>
                             </div>
@@ -734,10 +734,10 @@ export default function ApplicationDetailPage() {
                                             placeholder="https://..."
                                             className="glass-input w-full px-4 py-2 text-sm text-glass-primary"
                                         />
-                                        <div className="flex items-center justify-end gap-2">
+                                        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2">
                                             <button
                                                 onClick={() => setIsEditingUrl(false)}
-                                                className="glass-button px-4 py-1.5 text-xs font-bold text-glass-tertiary"
+                                                className="glass-button px-4 py-1.5 text-xs font-bold text-gray-700 dark:text-glass-tertiary"
                                             >
                                                 Cancel
                                             </button>
@@ -754,7 +754,7 @@ export default function ApplicationDetailPage() {
                                         </div>
                                     </div>
                                 ) : app.application_url ? (
-                                    <div className="flex items-center justify-between gap-4">
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                                         <div className="flex items-center gap-3 min-w-0">
                                             <div className="w-10 h-10 rounded-lg bg-primary-900/20 flex items-center justify-center text-primary-500 shrink-0">
                                                 <Globe size={20} />
@@ -763,7 +763,7 @@ export default function ApplicationDetailPage() {
                                                 href={app.application_url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="text-sm font-semibold text-primary-400 hover:text-primary-300 transition-colors truncate"
+                                                className="text-sm font-semibold text-primary-400 hover:text-primary-300 transition-colors break-all"
                                             >
                                                 {app.application_url}
                                             </a>
@@ -773,14 +773,14 @@ export default function ApplicationDetailPage() {
                                                 setTempUrl(app.application_url!)
                                                 setIsEditingUrl(true)
                                             }}
-                                            className="text-[11px] font-bold text-gray-400 hover:text-white uppercase tracking-widest shrink-0"
+                                            className="text-[11px] font-bold text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white uppercase tracking-widest shrink-0"
                                         >
                                             Edit
                                         </button>
                                     </div>
                                 ) : (
-                                    <div className="flex items-center justify-between">
-                                        <p className="text-xs text-gray-400 italic">No application URL provided.</p>
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                        <p className="text-xs text-gray-600 dark:text-gray-400 italic">No application URL provided.</p>
                                         <button
                                             onClick={() => {
                                                 setTempUrl('')
@@ -797,9 +797,9 @@ export default function ApplicationDetailPage() {
 
                         {/* Resume */}
                         <section>
-                            <div className="flex items-center justify-between mb-4">
+                            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
                                 <div>
-                                    <h3 className="flex items-center gap-2 text-xs font-bold text-glass-secondary uppercase tracking-wider">
+                                    <h3 className="flex items-center gap-2 text-xs font-bold text-gray-700 dark:text-glass-secondary uppercase tracking-wider">
                                         <span className="w-5 h-5 flex items-center justify-center bg-rose-500 dark:bg-rose-300 text-white dark:text-rose-950 shrink-0 rounded-md">
                                             <FileText size={12} strokeWidth={1.9} />
                                         </span>
@@ -807,7 +807,7 @@ export default function ApplicationDetailPage() {
                                     </h3>
                                     <p className="text-[10px] text-gray-500 mt-0.5 font-medium ml-5">Max file size: 5MB (.pdf)</p>
                                 </div>
-                                <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 text-[11px] font-bold cursor-pointer hover:bg-primary-100 transition-colors border border-primary-100 dark:border-primary-900/30">
+                                <label className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 text-[11px] font-bold cursor-pointer hover:bg-primary-100 transition-colors border border-primary-100 dark:border-primary-900/30 w-full sm:w-auto">
                                     {isUploading ? (
                                         <span className="flex items-center gap-1.5"><div className="w-3 h-3 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" /> Uploading...</span>
                                     ) : (
@@ -855,7 +855,7 @@ export default function ApplicationDetailPage() {
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-sm font-semibold text-glass-primary truncate">{app.resume_file_name}</p>
-                                                <p className="text-[11px] text-gray-400 uppercase font-bold tracking-tighter">Uploaded Resume</p>
+                                                <p className="text-[11px] text-gray-600 dark:text-gray-400 uppercase font-bold tracking-tighter">Uploaded Resume</p>
                                             </div>
                                             <button
                                                 onClick={() => setShowResumeConfirm(true)}
@@ -874,7 +874,7 @@ export default function ApplicationDetailPage() {
                                         </button>
                                     </div>
                                 ) : (
-                                    <p className="text-xs text-gray-400 italic">No file uploaded yet. Upload the tailored resume PDF used for this role.</p>
+                                    <p className="text-xs text-gray-600 dark:text-gray-400 italic">No file uploaded yet. Upload the tailored resume PDF used for this role.</p>
                                 )}
                             </div>
                         </section>
@@ -882,7 +882,7 @@ export default function ApplicationDetailPage() {
                         {/* Skill Gaps */}
                         <section>
                             <div className="flex items-center justify-between mb-4">
-                                <h3 className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                                <h3 className="flex items-center gap-2 text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                                     <Tag size={14} /> Skill Gaps to Close
                                 </h3>
                             </div>
@@ -903,7 +903,7 @@ export default function ApplicationDetailPage() {
 
                         {/* Notes */}
                         <section>
-                            <h3 className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
+                            <h3 className="flex items-center gap-2 text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-4">
                                 <CalendarCheck size={14} /> Interview Notes
                             </h3>
                             <textarea
@@ -946,14 +946,14 @@ export default function ApplicationDetailPage() {
             {showPdfViewer && app.resume_text && (
                 <div className="glass-modal-overlay fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
                     <div className="glass-modal w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden">
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 shrink-0">
-                            <div className="flex items-center gap-3">
+                        <div className="flex items-start sm:items-center justify-between gap-3 px-4 sm:px-6 py-4 border-b border-white/10 shrink-0">
+                            <div className="flex items-center gap-3 min-w-0">
                                 <div className="w-10 h-10 flex items-center justify-center text-rose-500" style={{ borderRadius: 'var(--radius-md)', background: 'var(--tint-rose)' }}>
                                     <FileText size={20} />
                                 </div>
                                 <div className="min-w-0 flex-1">
                                     <h2 className="text-sm sm:text-lg font-bold text-glass-primary truncate">{app.resume_file_name}</h2>
-                                    <p className="text-[10px] sm:text-xs text-glass-tertiary truncate">Tailored Resume for {app.company}</p>
+                                    <p className="text-[10px] sm:text-xs text-gray-500 dark:text-glass-tertiary truncate">Tailored Resume for {app.company}</p>
                                 </div>
                             </div>
                             <button

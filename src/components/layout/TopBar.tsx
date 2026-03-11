@@ -4,6 +4,7 @@ import { Search, X, Sun, Moon, Menu, User, LogOut, FolderOpen, Trash2, Plus, Bug
 import { useAuthStore } from '../../store/useAuthStore'
 import { useJobStore } from '../../store/useJobStore'
 import { useThemeStore } from '../../store/useThemeStore'
+import { getUserAvatarUrl, getUserDisplayName, getUserInitials } from '../../lib/userProfile'
 import NewJobModal from '../NewJobModal'
 
 export default function TopBar() {
@@ -17,6 +18,9 @@ export default function TopBar() {
     const { setSearchQuery } = useJobStore()
     const { user, signOut } = useAuthStore()
     const { theme, toggleTheme } = useThemeStore()
+    const avatarUrl = getUserAvatarUrl(user)
+    const displayName = getUserDisplayName(user)
+    const userInitials = getUserInitials(user)
 
     useEffect(() => {
         const handler = (e: KeyboardEvent) => {
@@ -59,17 +63,13 @@ export default function TopBar() {
         }
     }
 
-    const userInitials = user?.user_metadata?.full_name
-        ? user.user_metadata.full_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
-        : user?.email?.[0].toUpperCase() || 'U'
-
     return (
         <>
             <header className="h-16 md:h-20 backdrop-blur-md border-b border-white/10 flex items-center justify-between px-4 md:px-8 shrink-0 z-40 sticky top-0 gap-3" style={{ background: 'var(--glass-fill-light)' }}>
                 {/* Hamburger — mobile only */}
                 <button
                     onClick={() => setMenuOpen(true)}
-                    className="glass-button md:hidden p-2 -ml-1 text-glass-tertiary shrink-0"
+                    className="glass-button md:hidden p-2 -ml-1 text-gray-700 dark:text-glass-tertiary shrink-0"
                 >
                     <Menu size={22} strokeWidth={1.5} />
                 </button>
@@ -85,7 +85,7 @@ export default function TopBar() {
                             size={18}
                             strokeWidth={1.5}
                             className={`relative ml-4 transition-colors duration-300 
-                                ${focused ? 'text-primary-400' : 'text-glass-tertiary'}`}
+                                ${focused ? 'text-primary-500' : 'text-gray-500 dark:text-glass-tertiary'}`}
                         />
 
                         <input
@@ -96,7 +96,7 @@ export default function TopBar() {
                             onFocus={() => setFocused(true)}
                             onBlur={() => setFocused(false)}
                             placeholder="Search applications..."
-                            className="relative flex-1 py-3 px-3 bg-transparent text-sm font-medium text-glass-primary placeholder-gray-400 border-none outline-none focus:ring-0"
+                            className="relative flex-1 py-3 px-3 bg-transparent text-sm font-medium text-gray-900 dark:text-glass-primary placeholder:text-gray-500 dark:placeholder:text-gray-400 border-none outline-none focus:ring-0"
                         />
 
                         {query && (
@@ -115,17 +115,17 @@ export default function TopBar() {
                     <div className="h-8 w-px" style={{ background: 'var(--glass-fill-medium)' }} />
                     <button
                         onClick={toggleTheme}
-                        className="glass-button p-2.5 text-glass-tertiary"
+                        className="glass-button p-2.5 text-gray-700 dark:text-glass-tertiary"
                         title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                     >
                         {theme === 'dark' ? <Sun size={18} strokeWidth={1.5} className="text-amber-400" /> : <Moon size={18} strokeWidth={1.5} className="text-indigo-500" />}
                     </button>
                     <button
                         onClick={() => navigate('/profile')}
-                        className="w-10 h-10 flex items-center justify-center text-white font-black text-sm shadow-lg shrink-0"
+                        className="w-10 h-10 flex items-center justify-center text-white font-black text-sm shadow-lg shrink-0 overflow-hidden"
                         style={{ borderRadius: 'var(--radius-pill)', background: 'var(--tint-blue)' }}
                     >
-                        {userInitials}
+                        {avatarUrl ? <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" /> : userInitials}
                     </button>
                 </div>
             </header>
@@ -135,18 +135,24 @@ export default function TopBar() {
                 <div
                     className="glass-modal-overlay md:hidden fixed inset-0 z-50 animate-in fade-in duration-200"
                     onClick={() => setMenuOpen(false)}
+                    style={{ background: 'rgba(2, 6, 23, 0.38)', backdropFilter: 'blur(8px)' }}
                 >
                     {/* Drawer Panel */}
                     <div
-                        className="glass-modal absolute top-0 left-0 h-full w-72 flex flex-col animate-in slide-in-from-left duration-300 overflow-hidden"
+                        className="glass-modal absolute top-0 left-0 h-full w-72 flex flex-col animate-in slide-in-from-left duration-300 overflow-hidden border-r border-white/10 shadow-2xl"
                         onClick={e => e.stopPropagation()}
                         onTouchStart={handleTouchStart}
                         onTouchEnd={handleTouchEnd}
+                        style={{
+                            background: 'rgba(255,255,255,0.9)',
+                            backdropFilter: 'blur(18px)',
+                            WebkitBackdropFilter: 'blur(18px)',
+                        }}
                     >
                         {/* User Header */}
                         <div className="p-4 border-b border-white/10 shrink-0">
                             <div className="flex items-center justify-between mb-3">
-                                <h3 className="text-xs font-bold text-glass-tertiary uppercase tracking-wider">Menu</h3>
+                                <h3 className="text-xs font-bold text-gray-500 dark:text-glass-tertiary uppercase tracking-wider">Menu</h3>
                                 <button
                                     onClick={() => setMenuOpen(false)}
                                     className="p-1.5 rounded-lg border border-rose-400/30 text-rose-400 hover:text-rose-500 hover:border-rose-500/50 transition-colors"
@@ -155,14 +161,14 @@ export default function TopBar() {
                                 </button>
                             </div>
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 flex items-center justify-center text-white font-black text-sm shadow-lg" style={{ borderRadius: 'var(--radius-lg)', background: 'var(--tint-blue)' }}>
-                                    {userInitials}
+                                <div className="w-10 h-10 flex items-center justify-center text-white font-black text-sm shadow-lg overflow-hidden" style={{ borderRadius: 'var(--radius-lg)', background: 'var(--tint-blue)' }}>
+                                    {avatarUrl ? <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" /> : userInitials}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-bold text-glass-primary truncate">
-                                        {user?.user_metadata?.full_name || 'User'}
+                                        {displayName}
                                     </p>
-                                    <p className="text-[10px] text-glass-tertiary truncate">{user?.email}</p>
+                                    <p className="text-[10px] text-gray-500 dark:text-glass-tertiary truncate">{user?.email}</p>
                                 </div>
                             </div>
                         </div>
@@ -200,7 +206,7 @@ export default function TopBar() {
                                 onClick={() => { navigate('/profile'); setMenuOpen(false) }}
                                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-glass-primary hover:bg-white/5 transition-colors"
                             >
-                                <User size={18} strokeWidth={1.5} className="text-glass-tertiary" />
+                                <User size={18} strokeWidth={1.5} className="text-gray-500 dark:text-glass-tertiary" />
                                 Profile Settings
                             </button>
 

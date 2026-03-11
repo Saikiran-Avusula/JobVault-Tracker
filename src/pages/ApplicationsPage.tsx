@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-    LayoutGrid, List, Plus, Trash2, Calendar, FileText, Eye, Briefcase, Target, Code, ChevronLeft, ChevronRight, Bell
+    LayoutGrid, List, Plus, Trash2, Calendar, FileText, Eye, Briefcase, Target, Code, ChevronLeft, ChevronRight, Bell, Sparkles, ShieldCheck, Upload
 } from 'lucide-react'
 import { useJobStore } from '../store/useJobStore'
 import { timeAgo, formatLocalTime } from '../lib/utils'
@@ -151,7 +151,7 @@ export default function ApplicationsPage() {
                     <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">JobVault Tracker</h1>
                     <p className="text-gray-500 text-sm font-medium">Your career leads, synchronized to the cloud.</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                     <div className="hidden md:flex p-1 bg-gray-100 dark:bg-gray-900 rounded-full border border-gray-200 dark:border-gray-800 shadow-sm transition-colors">
                         <button
                             onClick={() => setView('grid')}
@@ -169,6 +169,12 @@ export default function ApplicationsPage() {
                     <button
                         onClick={() => setShowAddModal(true)}
                         className="hidden md:flex items-center gap-2 px-6 py-2.5 bg-primary-500 text-white rounded-full text-sm font-bold shadow-lg shadow-primary-500/20 hover:bg-primary-600 transition-all hover:scale-[1.02]"
+                    >
+                        <Plus size={18} /> Add Application
+                    </button>
+                    <button
+                        onClick={() => setShowAddModal(true)}
+                        className="md:hidden inline-flex items-center justify-center gap-2 px-5 py-3 bg-primary-500 text-white rounded-2xl text-sm font-bold shadow-lg shadow-primary-500/20 hover:bg-primary-600 transition-all w-full sm:w-auto"
                     >
                         <Plus size={18} /> Add Application
                     </button>
@@ -230,13 +236,13 @@ export default function ApplicationsPage() {
                         className={`px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300 border-none outline-none ring-0
               ${statusFilter === s
                                 ? 'bg-primary-500 text-white shadow-float scale-105'
-                                : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+                                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
                     >
                         {s}
                     </button>
                 ))}
                 {statusFilter === 'Interviews' && (
-                    <div className="hidden md:flex shrink-0 md:w-auto md:ml-2 items-center gap-2 p-1 rounded-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/60">
+                    <div className="flex shrink-0 w-full md:w-auto md:ml-2 items-center gap-2 p-1 rounded-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/60">
                         {([
                             { key: 'All', label: 'All' },
                             { key: 'Technical Interview', label: 'Technical' },
@@ -256,6 +262,68 @@ export default function ApplicationsPage() {
                     </div>
                 )}
             </div>
+
+            {totalApps === 0 && !searchQuery && statusFilter === 'All' && (
+                <section className="relative overflow-hidden rounded-[2rem] border border-primary-200 dark:border-primary-900/30 bg-white dark:bg-[#0c1020]/55 shadow-sm">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.12),transparent_40%),radial-gradient(circle_at_bottom_right,rgba(16,185,129,0.10),transparent_35%)]" />
+                    <div className="relative p-6 md:p-8">
+                        <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+                            <div className="max-w-2xl">
+                                <p className="text-[11px] font-black uppercase tracking-[0.2em] text-primary-600 dark:text-primary-300 mb-3">
+                                    First-Time Setup
+                                </p>
+                                <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white tracking-tight">
+                                    Start your job search vault in three quick steps.
+                                </h2>
+                                <p className="text-sm md:text-base text-gray-700 dark:text-gray-300 mt-3 leading-relaxed">
+                                    Add your first application, attach the tailored resume you actually sent, and use the tracker to monitor follow-ups, interviews, and offers from one place.
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setShowAddModal(true)}
+                                className="glass-button inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-bold text-white w-full md:w-auto"
+                                style={{ background: 'var(--tint-blue)' }}
+                            >
+                                <Plus size={16} />
+                                Add First Application
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                            {[
+                                {
+                                    icon: Briefcase,
+                                    title: 'Create Entry',
+                                    copy: 'Save company, role, location, and the current pipeline stage.',
+                                },
+                                {
+                                    icon: Upload,
+                                    title: 'Attach Resume',
+                                    copy: 'Keep the exact tailored PDF used for that application.',
+                                },
+                                {
+                                    icon: ShieldCheck,
+                                    title: 'Track Progress',
+                                    copy: 'Use notes, follow-up dates, and status changes as replies come in.',
+                                },
+                            ].map(({ icon: Icon, title, copy }) => (
+                                <div key={title} className="rounded-[1.5rem] border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-5">
+                                    <div className="w-10 h-10 rounded-2xl bg-primary-500/10 text-primary-600 dark:text-primary-300 flex items-center justify-center mb-4">
+                                        <Icon size={18} />
+                                    </div>
+                                    <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-[0.15em]">{title}</h3>
+                                    <p className="text-sm text-gray-700 dark:text-gray-300 mt-2 leading-relaxed">{copy}</p>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="mt-5 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                            <Sparkles size={16} className="text-amber-500" />
+                            You can always report bugs from the side menu if something breaks.
+                        </div>
+                    </div>
+                </section>
+            )}
 
             {/* Content */}
             {
@@ -294,7 +362,7 @@ export default function ApplicationsPage() {
                                                         </button>
                                                     </div>
                                                 )}
-                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
+                                                <p className="text-[10px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-tighter">
                                                     {app.updated_at && app.updated_at !== app.applied_date ? 'Updated ' : 'Applied '}
                                                     {timeAgo(app.updated_at || app.applied_date)}
                                                 </p>
@@ -304,7 +372,7 @@ export default function ApplicationsPage() {
                                     <StatusPill status={app.status} />
                                 </div>
 
-                                <p className="text-sm font-medium text-gray-400 truncate mb-4">{app.role}</p>
+                                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 truncate mb-4">{app.role}</p>
 
                                 <div className="flex items-center gap-2 mb-6">
                                     {app.updated_at && app.updated_at !== app.applied_date ? (
@@ -351,12 +419,12 @@ export default function ApplicationsPage() {
                                     <div className="flex items-start justify-between gap-3">
                                         <div className="min-w-0">
                                             <p className="text-base font-bold text-glass-primary truncate">{app.company}</p>
-                                            <p className="text-sm text-glass-secondary truncate">{app.role}</p>
+                                            <p className="text-sm text-gray-700 dark:text-glass-secondary truncate">{app.role}</p>
                                         </div>
                                         <StatusPill status={app.status} />
                                     </div>
                                     <div className="mt-3 flex items-center justify-between">
-                                        <p className="text-xs text-glass-tertiary">{app.location || 'Location not set'}</p>
+                                        <p className="text-xs text-gray-500 dark:text-glass-tertiary">{app.location || 'Location not set'}</p>
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation()
@@ -487,7 +555,8 @@ export default function ApplicationsPage() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-2 mt-8">
+                <div className="mt-8 overflow-x-auto pb-1 scrollbar-hide">
+                    <div className="flex min-w-max items-center justify-center gap-2">
                     <button
                         onClick={() => setPage(currentPage - 1)}
                         disabled={currentPage === 1}
@@ -500,7 +569,7 @@ export default function ApplicationsPage() {
                             <button
                                 key={page}
                                 onClick={() => setPage(page)}
-                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                                className={`min-w-10 px-3 sm:px-4 py-2 rounded-lg text-sm font-bold transition-all ${
                                     currentPage === page
                                         ? 'bg-primary-500 text-white shadow-lg'
                                         : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
@@ -517,6 +586,7 @@ export default function ApplicationsPage() {
                     >
                         <ChevronRight size={20} />
                     </button>
+                    </div>
                 </div>
             )}
 

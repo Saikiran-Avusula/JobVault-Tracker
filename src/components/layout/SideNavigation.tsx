@@ -7,6 +7,7 @@ import {
 import { useAuthStore } from '../../store/useAuthStore'
 import { useJobStore } from '../../store/useJobStore'
 import { useThemeStore } from '../../store/useThemeStore'
+import { getUserAvatarUrl, getUserDisplayName, getUserInitials } from '../../lib/userProfile'
 import { isAdminEmail } from '../../services/issueService'
 import NewJobModal from '../NewJobModal'
 
@@ -24,6 +25,9 @@ export default function SideNavigation() {
     const { theme, toggleTheme } = useThemeStore()
     const navigate = useNavigate()
     const isAdmin = isAdminEmail(user?.email)
+    const avatarUrl = getUserAvatarUrl(user)
+    const displayName = getUserDisplayName(user)
+    const initials = getUserInitials(user)
 
     const activeApplications = applications.filter(a => !a.is_trash)
     const trashedApplications = applications.filter(a => a.is_trash)
@@ -179,17 +183,21 @@ export default function SideNavigation() {
                     <div className={`flex items-center gap-2 ${collapsed ? 'justify-center flex-col gap-2' : ''}`}>
                         <div
                             onClick={() => navigate('/profile')}
-                            className="w-8 h-8 flex items-center justify-center text-primary-400 text-xs font-bold shrink-0 cursor-pointer hover:ring-2 hover:ring-primary-500/50 transition-all shadow-lg"
+                            className="w-8 h-8 shrink-0 cursor-pointer hover:ring-2 hover:ring-primary-500/50 transition-all shadow-lg overflow-hidden"
                             style={{ borderRadius: 'var(--radius-pill)', background: 'var(--tint-blue)' }}
                         >
-                            {user?.user_metadata?.full_name
-                                ? user.user_metadata.full_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
-                                : user?.email?.[0].toUpperCase() || 'U'}
+                            {avatarUrl ? (
+                                <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-white text-xs font-bold">
+                                    {initials}
+                                </div>
+                            )}
                         </div>
                         {!collapsed && (
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
-                                    {user?.user_metadata?.full_name || 'User'}
+                                    {displayName}
                                 </p>
                                 <p className="text-xs text-slate-700 dark:text-slate-300 truncate">{user?.email}</p>
                             </div>

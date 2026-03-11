@@ -117,7 +117,7 @@ export default function NewJobModal({ open, onClose }: Props) {
                         </div>
                         <div>
                             <h2 className="text-xl font-bold text-glass-primary">New Application</h2>
-                            <p className="text-xs text-glass-tertiary">Add a new job to your vault</p>
+                            <p className="text-xs text-gray-500 dark:text-glass-tertiary">Add a new job to your vault</p>
                         </div>
                     </div>
                     <button onClick={onClose} className="p-2 rounded-lg border border-rose-400/30 text-rose-400 hover:text-rose-500 hover:border-rose-500/50 transition-colors">
@@ -145,24 +145,24 @@ export default function NewJobModal({ open, onClose }: Props) {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-1.5">
-                                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                                <label className="text-[11px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
                                     <Globe size={12} /> Company Name
                                 </label>
                                 <input
                                     required
-                                    className="glass-input w-full px-4 py-2.5 text-sm text-glass-primary"
+                                    className="glass-input w-full px-4 py-2.5 text-sm text-gray-900 dark:text-glass-primary placeholder:text-gray-500 dark:placeholder:text-gray-400"
                                     placeholder="e.g. Google"
                                     value={formData.company}
                                     onChange={e => setFormData({ ...formData, company: e.target.value })}
                                 />
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                                <label className="text-[11px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
                                     <Briefcase size={12} /> Job Role
                                 </label>
                                 <input
                                     required
-                                    className="glass-input w-full px-4 py-2.5 text-sm text-glass-primary"
+                                    className="glass-input w-full px-4 py-2.5 text-sm text-gray-900 dark:text-glass-primary placeholder:text-gray-500 dark:placeholder:text-gray-400"
                                     placeholder="e.g. Frontend Engineer"
                                     value={formData.role}
                                     onChange={e => setFormData({ ...formData, role: e.target.value })}
@@ -171,11 +171,11 @@ export default function NewJobModal({ open, onClose }: Props) {
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <label className="text-[11px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
                                 📍 Location
                             </label>
                             <input
-                                className="glass-input w-full px-4 py-2.5 text-sm text-glass-primary"
+                                className="glass-input w-full px-4 py-2.5 text-sm text-gray-900 dark:text-glass-primary placeholder:text-gray-500 dark:placeholder:text-gray-400"
                                 placeholder="e.g. San Francisco, CA or Remote"
                                 value={formData.location}
                                 onChange={e => setFormData({ ...formData, location: e.target.value })}
@@ -184,12 +184,12 @@ export default function NewJobModal({ open, onClose }: Props) {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-1.5">
-                                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                                <label className="text-[11px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
                                     <Calendar size={12} /> Follow-up Date
                                 </label>
                                 <input
                                     type="date"
-                                    className="glass-input w-full px-4 py-2.5 text-sm text-glass-primary"
+                                    className="glass-input w-full px-4 py-2.5 text-sm text-gray-900 dark:text-glass-primary"
                                     value={formData.follow_up_date}
                                     onChange={e => setFormData({ ...formData, follow_up_date: e.target.value })}
                                 />
@@ -197,11 +197,11 @@ export default function NewJobModal({ open, onClose }: Props) {
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <label className="text-[11px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
                                 <Globe size={12} /> Application URL (Optional)
                             </label>
                             <input
-                                className="glass-input w-full px-4 py-2.5 text-sm text-glass-primary"
+                                className="glass-input w-full px-4 py-2.5 text-sm text-gray-900 dark:text-glass-primary placeholder:text-gray-500 dark:placeholder:text-gray-400"
                                 placeholder="https://..."
                                 value={formData.application_url}
                                 onChange={e => setFormData({ ...formData, application_url: e.target.value })}
@@ -209,7 +209,7 @@ export default function NewJobModal({ open, onClose }: Props) {
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <label className="text-[11px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
                                 <AlignLeft size={12} /> Job Description
                             </label>
                             <div className="flex items-center justify-between mb-1">
@@ -223,7 +223,7 @@ export default function NewJobModal({ open, onClose }: Props) {
                                 </button>
                             </div>
                             <textarea
-                                className="glass-input w-full px-4 py-3 text-sm text-glass-primary h-40 resize-none"
+                                className="glass-input w-full px-4 py-3 text-sm text-gray-900 dark:text-glass-primary placeholder:text-gray-500 dark:placeholder:text-gray-400 h-40 resize-none"
                                 placeholder="Paste the JD here..."
                                 value={formData.jd_text}
                                 onChange={e => setFormData({ ...formData, jd_text: e.target.value })}
@@ -259,7 +259,7 @@ export default function NewJobModal({ open, onClose }: Props) {
                                         </div>
                                         <div>
                                             <p className="text-sm font-bold text-gray-900 dark:text-white">Upload Tailored Resume</p>
-                                            <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">
+                                            <p className="text-[10px] text-gray-600 dark:text-gray-400 font-medium">
                                                 {selectedFile?.name || 'Select the PDF version sent for this role'}
                                             </p>
                                         </div>
@@ -287,7 +287,7 @@ export default function NewJobModal({ open, onClose }: Props) {
                         <button
                             type="button"
                             onClick={onClose}
-                            className="glass-button px-6 py-2.5 text-sm font-bold text-glass-secondary"
+                            className="glass-button px-6 py-2.5 text-sm font-bold text-gray-800 dark:text-glass-secondary"
                         >
                             Cancel
                         </button>

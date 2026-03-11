@@ -1,10 +1,17 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { HardDrive, Eye, EyeOff, ArrowRight } from 'lucide-react'
+import { HardDrive, Eye, EyeOff, ArrowRight, Briefcase, FileText, RotateCcw, ShieldCheck } from 'lucide-react'
 import { useAuthStore } from '../store/useAuthStore'
 import * as authService from '../services/authService'
 import { handleError } from '../lib/errors'
 import toast from 'react-hot-toast'
+
+const featureCards = [
+    { icon: Briefcase, title: 'Track Roles', copy: 'Company, role, stage' },
+    { icon: FileText, title: 'Store Resumes', copy: 'One PDF per role' },
+    { icon: RotateCcw, title: 'Recover Trash', copy: 'Restore deleted entries' },
+    { icon: ShieldCheck, title: 'Get Support', copy: 'Report app issues fast' },
+]
 
 export default function LoginPage() {
     const [isSignUp, setIsSignUp] = useState(false)
@@ -32,7 +39,7 @@ export default function LoginPage() {
                 toast.success('Check your email for confirmation!')
             } else {
                 await authService.signInWithEmail(email, password)
-                toast.success('Welcome back! 👋')
+                toast.success('Welcome back!')
                 navigate('/')
             }
         } catch (error) {
@@ -52,43 +59,96 @@ export default function LoginPage() {
 
     return (
         <div className="min-h-screen flex bg-gray-50 dark:bg-[#020617]">
-            {/* Left panel */}
             <div className="hidden lg:flex lg:w-1/2 flex-col justify-center items-center bg-gradient-to-br from-primary-600 to-primary-800 p-12 text-white relative overflow-hidden">
-                <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
+                <div
+                    className="absolute inset-0 opacity-10"
+                    style={{
+                        backgroundImage:
+                            'radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)',
+                        backgroundSize: '60px 60px',
+                    }}
+                />
                 <div className="relative z-10 max-w-sm text-center">
                     <div className="w-20 h-20 rounded-3xl bg-white/20 flex items-center justify-center mx-auto mb-8">
                         <HardDrive size={36} className="text-white" />
                     </div>
                     <h2 className="text-4xl font-black mb-4">JobVault Tracker</h2>
                     <p className="text-primary-100 text-lg leading-relaxed opacity-80">
-                        Securely manage your job hunt — tailored resumes, skill tracking, and trash recovery in one vault.
+                        Securely manage your job hunt, tailored resumes, skill tracking, and trash recovery in one vault.
                     </p>
                     <div className="mt-10 grid grid-cols-2 gap-4 text-left">
-                        {[
-                            ['🚀', 'Pipeline Stepper', 'Magnetic status path'],
-                            ['🏢', 'Tailored Vault', 'Separate resumes per role'],
-                            ['🗑️', 'Trash recovery', 'Never lose an application'],
-                            ['📱', 'Mobile First', 'Keenly polished UI'],
-                        ].map(([emoji, title, desc]) => (
+                        {featureCards.map(({ icon: Icon, title, copy }) => (
                             <div key={title} className="bg-black/20 rounded-2xl p-4 border border-white/5">
-                                <div className="text-2xl mb-2">{emoji}</div>
+                                <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center mb-3">
+                                    <Icon size={18} />
+                                </div>
                                 <p className="font-bold text-sm">{title}</p>
-                                <p className="text-xs text-primary-200 mt-0.5">{desc}</p>
+                                <p className="text-xs text-primary-200 mt-0.5">{copy}</p>
                             </div>
                         ))}
                     </div>
                 </div>
             </div>
 
-            {/* Right panel */}
             <div className="flex-1 flex items-center justify-center p-8">
                 <div className="w-full max-w-md">
                     <div className="flex items-center gap-2 mb-8 lg:hidden">
-                        <div className="w-8 h-8 rounded-lg bg-primary-500 flex items-center justify-center"><HardDrive size={16} color="white" /></div>
-                        <span className="font-bold text-white">JobVault Tracker</span>
+                        <div className="w-8 h-8 rounded-lg bg-primary-500 flex items-center justify-center">
+                            <HardDrive size={16} color="white" />
+                        </div>
+                        <span className="font-bold text-gray-900 dark:text-white">JobVault Tracker</span>
                     </div>
 
-                    <h1 className="text-3xl font-black text-gray-900 dark:text-white mb-2">{isSignUp ? 'Create account' : 'Welcome back'}</h1>
+                    <div className="lg:hidden mb-8 relative overflow-hidden rounded-[2rem] border border-primary-200/70 dark:border-primary-900/30 bg-gradient-to-br from-white via-primary-50/70 to-sky-50/80 dark:from-gray-900 dark:via-slate-900 dark:to-[#0b1220] p-5 shadow-sm">
+                        <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-primary-400/15 blur-3xl" />
+                        <div className="absolute -bottom-8 -left-8 w-28 h-28 rounded-full bg-emerald-400/10 blur-3xl" />
+
+                        <div className="relative">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-11 h-11 rounded-2xl bg-primary-500 text-white flex items-center justify-center shadow-lg shadow-primary-500/25">
+                                    <HardDrive size={20} />
+                                </div>
+                                <div>
+                                    <p className="text-[11px] font-black uppercase tracking-[0.22em] text-primary-700 dark:text-primary-300">
+                                        About The App
+                                    </p>
+                                    <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                                        Personal job hunt command center
+                                    </p>
+                                </div>
+                            </div>
+
+                            <h2 className="text-[1.35rem] font-black text-gray-900 dark:text-white leading-tight">
+                                Keep applications, resumes, and follow-ups organized without losing track.
+                            </h2>
+                            <p className="text-sm text-gray-700 dark:text-gray-300 mt-3 leading-relaxed">
+                                Sign in to track every role you apply for, store tailored resumes per company, restore deleted items, and report issues when something goes wrong.
+                            </p>
+
+                            <div className="grid grid-cols-2 gap-3 mt-5">
+                                {featureCards.map(({ icon: Icon, title, copy }) => (
+                                    <div
+                                        key={title}
+                                        className="rounded-[1.4rem] border border-white/60 dark:border-white/8 bg-white/75 dark:bg-white/5 backdrop-blur-sm p-3.5"
+                                    >
+                                        <div className="w-9 h-9 rounded-xl bg-primary-500/10 text-primary-700 dark:text-primary-300 flex items-center justify-center mb-3">
+                                            <Icon size={17} />
+                                        </div>
+                                        <p className="text-[11px] font-black uppercase tracking-[0.16em] text-gray-900 dark:text-white">
+                                            {title}
+                                        </p>
+                                        <p className="text-[11px] text-gray-600 dark:text-gray-400 mt-1 leading-relaxed">
+                                            {copy}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    <h1 className="text-3xl font-black text-gray-900 dark:text-white mb-2">
+                        {isSignUp ? 'Create account' : 'Welcome back'}
+                    </h1>
                     <p className="text-gray-500 mb-8 font-medium">Step into your career vault</p>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
@@ -120,7 +180,7 @@ export default function LoginPage() {
                                     value={password}
                                     onChange={e => setPassword(e.target.value)}
                                     type={showPass ? 'text' : 'password'}
-                                    placeholder="••••••••"
+                                    placeholder="........"
                                     className="w-full px-4 py-3 pr-11 rounded-xl bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:border-primary-500 transition-all outline-none ring-0"
                                 />
                                 <button type="button" onClick={() => setShowPass(s => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
@@ -147,10 +207,10 @@ export default function LoginPage() {
 
                     <div className="relative my-8">
                         <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-gray-800"></div>
+                            <div className="w-full border-t border-gray-300 dark:border-gray-800" />
                         </div>
                         <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-widest">
-                            <span className="bg-gray-50 dark:bg-[#020617] px-4 text-gray-500">Or continue with</span>
+                            <span className="bg-gray-50 dark:bg-[#020617] px-4 text-gray-600 dark:text-gray-500">Or continue with</span>
                         </div>
                     </div>
 
@@ -169,10 +229,10 @@ export default function LoginPage() {
 
                     <button
                         onClick={() => setIsSignUp(!isSignUp)}
-                        className="w-full text-center text-xs text-gray-400 mt-8 hover:text-gray-300 transition-colors group"
+                        className="w-full text-center text-xs text-gray-600 dark:text-gray-400 mt-8 hover:text-gray-800 dark:hover:text-gray-300 transition-colors group"
                     >
                         {isSignUp ? 'Already have an account? ' : 'Need an account? '}
-                        <span className="text-white font-bold border-white/50 rounded-full border-2 px-3 py-1 group-hover:border-white transition-all ml-1 inline-block">
+                        <span className="text-gray-900 dark:text-white font-bold border-gray-300 dark:border-white/50 rounded-full border-2 px-3 py-1 group-hover:border-gray-500 dark:group-hover:border-white transition-all ml-1 inline-block">
                             {isSignUp ? 'Login' : 'Sign Up'}
                         </span>
                     </button>

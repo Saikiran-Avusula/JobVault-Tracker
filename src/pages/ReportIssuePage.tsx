@@ -38,18 +38,18 @@ const STATUS_OPTIONS: { label: string; value: IssueStatus }[] = [
 ]
 
 const STATUS_STYLES: Record<IssueStatus, string> = {
-    open: 'bg-rose-500/10 text-rose-500',
-    in_progress: 'bg-amber-500/10 text-amber-500',
-    in_review: 'bg-sky-500/10 text-sky-500',
-    resolved: 'bg-emerald-500/10 text-emerald-500',
+    open: 'bg-rose-500/10 text-rose-700 dark:text-rose-300',
+    in_progress: 'bg-amber-500/10 text-amber-700 dark:text-amber-300',
+    in_review: 'bg-sky-500/10 text-sky-700 dark:text-sky-300',
+    resolved: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
 }
 
 const AREA_STYLES: Record<IssueArea, string> = {
-    ui: 'bg-primary-500/10 text-primary-500',
-    backend: 'bg-primary-500/10 text-primary-500',
-    database: 'bg-primary-500/10 text-primary-500',
-    feature_request: 'bg-primary-500/10 text-primary-500',
-    other: 'bg-primary-500/10 text-primary-500',
+    ui: 'bg-primary-500/10 text-primary-700 dark:text-primary-300',
+    backend: 'bg-primary-500/10 text-primary-700 dark:text-primary-300',
+    database: 'bg-primary-500/10 text-primary-700 dark:text-primary-300',
+    feature_request: 'bg-primary-500/10 text-primary-700 dark:text-primary-300',
+    other: 'bg-primary-500/10 text-primary-700 dark:text-primary-300',
 }
 
 const SEVERITY_STYLES: Record<IssueSeverity, string> = {
@@ -67,7 +67,8 @@ function getStatusLabel(status: IssueStatus) {
     return STATUS_OPTIONS.find((option) => option.value === status)?.label || status
 }
 
-const SELECT_CLASSNAME = 'glass-input w-full px-4 py-3 text-sm text-black dark:text-glass-primary bg-white/80 dark:bg-transparent'
+const SELECT_CLASSNAME = 'glass-input w-full px-4 py-3 text-sm text-black dark:text-glass-primary bg-white dark:bg-slate-900 appearance-none'
+const FIELD_CLASSNAME = 'glass-input w-full px-4 py-3 text-sm text-black dark:text-glass-primary placeholder:text-gray-500 dark:placeholder:text-gray-400 bg-white/70 dark:bg-transparent'
 
 export default function ReportIssuePage() {
     const location = useLocation()
@@ -228,7 +229,9 @@ export default function ReportIssuePage() {
         }
     }
 
-    const visibleReports = isAdmin ? reports : reports.slice(0, 25)
+    const visibleReports = isAdmin
+        ? reports.filter((report) => report.user_id !== user?.id)
+        : reports.slice(0, 25)
 
     return (
         <div className="space-y-6 pb-20">
@@ -240,19 +243,19 @@ export default function ReportIssuePage() {
                     <h1 className="text-2xl md:text-3xl font-black text-glass-primary tracking-tight">
                         {isAdmin ? 'Admin Report Issues' : 'Report Issue'}
                     </h1>
-                    <p className="text-sm text-glass-secondary">{headingText}</p>
-                    <p className="text-xs text-glass-tertiary mt-1">Admin contact: {ADMIN_EMAIL}</p>
+                    <p className="text-sm text-gray-700 dark:text-glass-secondary">{headingText}</p>
+                    {!isAdmin && <p className="text-xs text-gray-500 dark:text-glass-tertiary mt-1">Admin contact: {ADMIN_EMAIL}</p>}
                 </div>
             </div>
 
             {!isAdmin && (
                 <form onSubmit={handleSubmit} className="glass-panel p-5 md:p-8 space-y-5">
-                    <div className="flex items-center justify-between gap-3">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                         <div>
                             <h2 className="text-xl font-black text-glass-primary">Submit a Bug Report</h2>
-                            <p className="text-sm text-glass-secondary">Include the issue details, affected page, and an optional screenshot proof.</p>
+                            <p className="text-sm text-gray-700 dark:text-glass-secondary">Include the issue details, affected page, and an optional screenshot proof.</p>
                         </div>
-                        <div className="text-xs uppercase tracking-[0.25em] font-black text-glass-tertiary">
+                        <div className="text-[11px] uppercase tracking-[0.18em] font-black text-gray-500 dark:text-glass-tertiary break-all">
                             {user?.id ? `User ID: ${user.id}` : 'Signed out'}
                         </div>
                     </div>
@@ -290,7 +293,7 @@ export default function ReportIssuePage() {
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             placeholder="Short summary of the issue"
-                            className="glass-input w-full px-4 py-3 text-sm text-glass-primary"
+                            className={FIELD_CLASSNAME}
                         />
                     </label>
 
@@ -300,7 +303,7 @@ export default function ReportIssuePage() {
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             placeholder="Steps to reproduce, expected behavior, actual behavior, and impact"
-                            className="glass-input w-full px-4 py-3 text-sm text-glass-primary min-h-[160px] resize-y"
+                            className={`${FIELD_CLASSNAME} min-h-[160px] resize-y`}
                         />
                     </label>
 
@@ -311,7 +314,7 @@ export default function ReportIssuePage() {
                                 value={contactEmail}
                                 onChange={(e) => setContactEmail(e.target.value)}
                                 placeholder="you@example.com"
-                                className="glass-input w-full px-4 py-3 text-sm text-glass-primary"
+                                className={FIELD_CLASSNAME}
                             />
                         </label>
                         <label className="space-y-1 block">
@@ -320,7 +323,7 @@ export default function ReportIssuePage() {
                                 value={pagePath}
                                 onChange={(e) => setPagePath(e.target.value)}
                                 placeholder="/applications"
-                                className="glass-input w-full px-4 py-3 text-sm text-glass-primary"
+                                className={FIELD_CLASSNAME}
                             />
                         </label>
                     </div>
@@ -328,7 +331,7 @@ export default function ReportIssuePage() {
                     <label className="space-y-2 block">
                         <span className="text-xs font-bold uppercase tracking-widest text-glass-tertiary">Screenshot Proof</span>
                         <div className="glass-panel p-4 border border-dashed border-white/15">
-                            <label className="flex items-center gap-2 text-sm font-semibold text-glass-primary cursor-pointer w-fit">
+                            <label className="flex items-center gap-2 text-sm font-semibold text-black dark:text-glass-primary cursor-pointer w-fit">
                                 <ImagePlus size={16} />
                                 <span>Upload image</span>
                                 <input
@@ -339,11 +342,11 @@ export default function ReportIssuePage() {
                                     onChange={(e) => setAttachmentFile(e.target.files?.[0] || null)}
                                 />
                             </label>
-                            <p className="text-xs text-glass-tertiary mt-2">
+                            <p className="text-xs text-gray-500 dark:text-glass-tertiary mt-2">
                                 Optional. PNG, JPG, JPEG, or WEBP up to 5MB.
                             </p>
                             {attachmentFile && (
-                                <p className="text-xs text-glass-secondary mt-2">
+                                <p className="text-xs text-gray-700 dark:text-glass-secondary mt-2">
                                     Selected: {attachmentFile.name}
                                 </p>
                             )}
@@ -354,7 +357,7 @@ export default function ReportIssuePage() {
                         <button
                             type="submit"
                             disabled={submitting}
-                            className="glass-button px-5 py-2.5 text-white text-sm font-bold disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center gap-2"
+                            className="glass-button w-full sm:w-auto px-5 py-2.5 text-white text-sm font-bold disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
                             style={{ background: 'var(--tint-blue)' }}
                         >
                             {submitting ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
@@ -365,28 +368,28 @@ export default function ReportIssuePage() {
             )}
 
             <section className="glass-panel p-5 md:p-8">
-                <div className="flex items-center justify-between gap-3 mb-4">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
                     <div>
                         <h2 className="text-xl font-black text-glass-primary">
                             {isAdmin ? 'Admin Report Issues' : 'Your Recent Reports'}
                         </h2>
-                        <p className="text-sm text-glass-secondary">
+                        <p className="text-sm text-gray-700 dark:text-glass-secondary">
                             {isAdmin
                                 ? 'Track affected users, review screenshots, and move issues through the workflow.'
                                 : 'Track admin progress on the bugs you reported.'}
                         </p>
                     </div>
-                    <span className="text-xs uppercase tracking-[0.25em] font-black text-glass-tertiary">
+                    <span className="text-xs uppercase tracking-[0.25em] font-black text-gray-500 dark:text-glass-tertiary">
                         {visibleReports.length} report{visibleReports.length === 1 ? '' : 's'}
                     </span>
                 </div>
 
                 {loadingReports ? (
-                    <div className="py-8 flex items-center gap-2 text-glass-tertiary">
+                    <div className="py-8 flex items-center gap-2 text-gray-500 dark:text-glass-tertiary">
                         <Loader2 size={16} className="animate-spin" /> Loading reports...
                     </div>
                 ) : visibleReports.length === 0 ? (
-                    <p className="text-sm text-glass-tertiary">No reports yet.</p>
+                    <p className="text-sm text-gray-500 dark:text-glass-tertiary">{isAdmin ? 'No user reports yet.' : 'No reports yet.'}</p>
                 ) : (
                     <div className="space-y-4">
                         {visibleReports.map((report) => {
@@ -400,21 +403,25 @@ export default function ReportIssuePage() {
                                     <div className="flex flex-wrap items-start justify-between gap-3">
                                         <div className="space-y-2">
                                             <div className="flex flex-wrap items-center gap-2">
-                                                <span className={`text-[10px] uppercase font-black tracking-widest px-2 py-1 rounded-full ${AREA_STYLES[report.area]}`}>
-                                                    {report.area}
-                                                </span>
-                                                <span className={`text-[10px] uppercase font-black tracking-widest px-2 py-1 rounded-full ${SEVERITY_STYLES[report.severity]}`}>
-                                                    {report.severity}
-                                                </span>
+                                                {!isAdmin && (
+                                                    <span className={`text-[10px] uppercase font-black tracking-widest px-2 py-1 rounded-full ${AREA_STYLES[report.area]}`}>
+                                                        {report.area}
+                                                    </span>
+                                                )}
+                                                {!isAdmin && (
+                                                    <span className={`text-[10px] uppercase font-black tracking-widest px-2 py-1 rounded-full ${SEVERITY_STYLES[report.severity]}`}>
+                                                        {report.severity}
+                                                    </span>
+                                                )}
                                                 <span className={`text-[10px] uppercase font-black tracking-widest px-2 py-1 rounded-full ${STATUS_STYLES[report.status]}`}>
                                                     {getStatusLabel(report.status)}
                                                 </span>
                                             </div>
                                             <p className="text-base font-bold text-glass-primary">{report.title}</p>
-                                            <p className="text-sm text-glass-secondary whitespace-pre-wrap">{report.description}</p>
+                                            <p className="text-sm text-gray-700 dark:text-glass-secondary whitespace-pre-wrap">{report.description}</p>
                                         </div>
 
-                                        <div className="text-right text-[11px] text-glass-tertiary space-y-1 min-w-[220px]">
+                                        <div className="w-full md:w-auto md:min-w-[220px] text-left md:text-right text-[11px] text-gray-500 dark:text-glass-tertiary space-y-1 break-words rounded-2xl md:rounded-none bg-black/[0.03] dark:bg-white/[0.03] p-3 md:p-0">
                                             <p>Created: {new Date(report.created_at).toLocaleString()}</p>
                                             <p>Updated: {new Date(report.updated_at).toLocaleString()}</p>
                                             <p>User ID: {report.user_id}</p>
@@ -425,7 +432,7 @@ export default function ReportIssuePage() {
 
                                     {report.attachment_path && attachmentUrls[report.id] && (
                                         <div className="space-y-2">
-                                            <p className="text-xs uppercase tracking-widest font-black text-glass-tertiary">Screenshot Proof</p>
+                                            <p className="text-xs uppercase tracking-widest font-black text-gray-500 dark:text-glass-tertiary">Screenshot Proof</p>
                                             <div className="flex flex-col gap-3 md:flex-row md:items-start">
                                                 <img
                                                     src={attachmentUrls[report.id]}
@@ -436,7 +443,7 @@ export default function ReportIssuePage() {
                                                     href={attachmentUrls[report.id]}
                                                     target="_blank"
                                                     rel="noreferrer"
-                                                    className="glass-button px-3 py-2 text-sm text-glass-primary inline-flex items-center gap-2 w-fit"
+                                                    className="glass-button px-3 py-2 text-sm text-black dark:text-glass-primary inline-flex items-center justify-center gap-2 w-full md:w-fit"
                                                 >
                                                     <ExternalLink size={14} />
                                                     Open Full Image
@@ -445,7 +452,7 @@ export default function ReportIssuePage() {
                                         </div>
                                     )}
 
-                                    {report.admin_message && (
+                                    {!isAdmin && report.admin_message && (
                                         <div className="glass-panel p-4 border border-emerald-500/10">
                                             <div className="flex items-center gap-2 text-sm font-bold text-black dark:text-glass-primary">
                                                 <MessageSquareText size={15} />
@@ -457,9 +464,9 @@ export default function ReportIssuePage() {
 
                                     {isAdmin && (
                                         <div className="space-y-4">
-                                            <div className="grid grid-cols-1 lg:grid-cols-[220px,1fr] gap-4 items-start">
+                                            <div className="grid grid-cols-1 md:grid-cols-[220px,1fr] gap-4 items-start">
                                                 <label className="space-y-1">
-                                                    <span className="text-xs font-bold uppercase tracking-widest text-glass-tertiary">Status</span>
+                                                    <span className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-glass-tertiary">Status</span>
                                                     <select
                                                         value={draft.status}
                                                         onChange={(e) =>
@@ -480,7 +487,7 @@ export default function ReportIssuePage() {
                                                 </label>
 
                                                 <label className="space-y-1 block">
-                                                    <span className="text-xs font-bold uppercase tracking-widest text-glass-tertiary">Admin Reply</span>
+                                                    <span className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-glass-tertiary">Admin Reply</span>
                                                     <textarea
                                                         value={draft.admin_message}
                                                         onChange={(e) =>
@@ -493,7 +500,7 @@ export default function ReportIssuePage() {
                                                             }))
                                                         }
                                                         placeholder="Add progress or resolution notes."
-                                                        className="glass-input w-full px-4 py-3 text-sm text-black dark:text-glass-primary min-h-[110px] resize-y"
+                                                        className="glass-input w-full px-4 py-3 text-sm text-black dark:text-glass-primary placeholder:text-gray-500 dark:placeholder:text-gray-400 min-h-[110px] resize-y bg-white/70 dark:bg-transparent"
                                                     />
                                                 </label>
                                             </div>
@@ -503,7 +510,7 @@ export default function ReportIssuePage() {
                                                     type="button"
                                                     onClick={() => handleAdminSave(report)}
                                                     disabled={savingReportId === report.id}
-                                                    className="glass-button px-5 py-3 text-white text-sm font-bold disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 min-w-[140px]"
+                                                    className="glass-button w-full sm:w-auto px-5 py-3 text-white text-sm font-bold disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 min-w-[140px]"
                                                     style={{ background: 'var(--tint-blue)' }}
                                                 >
                                                     {savingReportId === report.id ? <Loader2 size={16} className="animate-spin" /> : null}
