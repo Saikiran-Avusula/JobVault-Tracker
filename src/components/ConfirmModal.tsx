@@ -29,14 +29,14 @@ export default function ConfirmModal({
                 </div>
 
                 <h3 className="text-2xl font-black text-glass-primary text-center mb-2 tracking-tight">{title}</h3>
-                <p className="text-gray-700 dark:text-glass-secondary font-medium text-center text-sm mb-8 px-4 leading-relaxed">
+                <p className="text-gray-700 dark:text-white font-medium text-center text-sm mb-8 px-4 leading-relaxed">
                     {description}
                 </p>
 
                 <div className="flex gap-4">
                     <button
                         onClick={onClose}
-                        className="glass-button flex-1 px-6 py-3 text-xs font-black text-gray-800 dark:text-glass-secondary uppercase tracking-widest"
+                        className="glass-button flex-1 px-6 py-3 text-xs font-black text-gray-800 dark:text-white uppercase tracking-widest"
                     >
                         Cancel
                     </button>

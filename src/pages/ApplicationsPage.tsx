@@ -131,7 +131,7 @@ export default function ApplicationsPage() {
                     </div>
                     <div className="h-px md:h-8 w-full md:w-px bg-primary-500/20" />
                     <div className="flex-1 min-w-0">
-                        <p className="text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-200 leading-relaxed transition-all duration-500 animate-in fade-in slide-in-from-bottom-2" key={currentQuoteIndex}>
+                        <p className="text-xs md:text-sm font-semibold text-gray-700 dark:text-white leading-relaxed transition-all duration-500 animate-in fade-in slide-in-from-bottom-2" key={currentQuoteIndex}>
                             {MOTIVATIONAL_QUOTES[currentQuoteIndex]}
                         </p>
                     </div>
@@ -155,13 +155,13 @@ export default function ApplicationsPage() {
                     <div className="hidden md:flex p-1 bg-gray-100 dark:bg-gray-900 rounded-full border border-gray-200 dark:border-gray-800 shadow-sm transition-colors">
                         <button
                             onClick={() => setView('grid')}
-                            className={`p-2 rounded-full transition-all ${view === 'grid' ? 'bg-primary-500 text-white shadow-md' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
+                            className={`p-2 rounded-full transition-all ${view === 'grid' ? 'bg-primary-500 text-white shadow-md' : 'text-gray-500 dark:text-white hover:text-gray-700 dark:hover:text-white'}`}
                         >
                             <LayoutGrid size={16} />
                         </button>
                         <button
                             onClick={() => setView('list')}
-                            className={`p-2 rounded-full transition-all ${view === 'list' ? 'bg-primary-500 text-white shadow-md' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
+                            className={`p-2 rounded-full transition-all ${view === 'list' ? 'bg-primary-500 text-white shadow-md' : 'text-gray-500 dark:text-white hover:text-gray-700 dark:hover:text-white'}`}
                         >
                             <List size={16} />
                         </button>
@@ -236,7 +236,7 @@ export default function ApplicationsPage() {
                         className={`px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300 border-none outline-none ring-0
               ${statusFilter === s
                                 ? 'bg-primary-500 text-white shadow-float scale-105'
-                                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+                                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700'}`}
                     >
                         {s}
                     </button>
@@ -254,7 +254,7 @@ export default function ApplicationsPage() {
                                 className={`px-3 md:px-3.5 py-1.5 rounded-full text-[11px] md:text-xs font-bold transition-all
                                     ${interviewStageFilter === option.key
                                         ? 'bg-primary-500 text-white shadow-md'
-                                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700/70'}`}
+                                        : 'text-gray-600 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700/70'}`}
                             >
                                 {option.label}
                             </button>
@@ -275,7 +275,7 @@ export default function ApplicationsPage() {
                                 <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white tracking-tight">
                                     Start your job search vault in three quick steps.
                                 </h2>
-                                <p className="text-sm md:text-base text-gray-700 dark:text-gray-300 mt-3 leading-relaxed">
+                                <p className="text-sm md:text-base text-gray-700 dark:text-white mt-3 leading-relaxed">
                                     Add your first application, attach the tailored resume you actually sent, and use the tracker to monitor follow-ups, interviews, and offers from one place.
                                 </p>
                             </div>
@@ -312,12 +312,12 @@ export default function ApplicationsPage() {
                                         <Icon size={18} />
                                     </div>
                                     <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-[0.15em]">{title}</h3>
-                                    <p className="text-sm text-gray-700 dark:text-gray-300 mt-2 leading-relaxed">{copy}</p>
+                                    <p className="text-sm text-gray-700 dark:text-white mt-2 leading-relaxed">{copy}</p>
                                 </div>
                             ))}
                         </div>
 
-                        <div className="mt-5 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                        <div className="mt-5 flex items-center gap-2 text-sm text-gray-700 dark:text-white">
                             <Sparkles size={16} className="text-amber-500" />
                             You can always report bugs from the side menu if something breaks.
                         </div>
@@ -362,7 +362,7 @@ export default function ApplicationsPage() {
                                                         </button>
                                                     </div>
                                                 )}
-                                                <p className="text-[10px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-tighter">
+                                                <p className="text-[10px] font-bold text-gray-600 dark:text-white uppercase tracking-tighter">
                                                     {app.updated_at && app.updated_at !== app.applied_date ? 'Updated ' : 'Applied '}
                                                     {timeAgo(app.updated_at || app.applied_date)}
                                                 </p>
@@ -372,7 +372,7 @@ export default function ApplicationsPage() {
                                     <StatusPill status={app.status} />
                                 </div>
 
-                                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 truncate mb-4">{app.role}</p>
+                                <p className="text-sm font-medium text-gray-600 dark:text-white truncate mb-4">{app.role}</p>
 
                                 <div className="flex items-center gap-2 mb-6">
                                     {app.updated_at && app.updated_at !== app.applied_date ? (
@@ -395,7 +395,7 @@ export default function ApplicationsPage() {
                                 <div className="flex items-center justify-between pt-4 border-t border-gray-50 dark:border-gray-800">
                                     <div className="flex items-center gap-1.5 px-3 py-1 bg-gray-50 dark:bg-gray-800 rounded-full">
                                         <Calendar size={12} className="text-gray-400" />
-                                        <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase">{new Date(app.applied_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
+                                        <span className="text-[10px] font-bold text-gray-500 dark:text-white uppercase">{new Date(app.applied_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
                                     </div>
                                     <button
                                         onClick={(e) => { e.stopPropagation(); setDeleteId(app.id) }}
@@ -419,12 +419,12 @@ export default function ApplicationsPage() {
                                     <div className="flex items-start justify-between gap-3">
                                         <div className="min-w-0">
                                             <p className="text-base font-bold text-glass-primary truncate">{app.company}</p>
-                                            <p className="text-sm text-gray-700 dark:text-glass-secondary truncate">{app.role}</p>
+                                            <p className="text-sm text-gray-700 dark:text-white truncate">{app.role}</p>
                                         </div>
                                         <StatusPill status={app.status} />
                                     </div>
                                     <div className="mt-3 flex items-center justify-between">
-                                        <p className="text-xs text-gray-500 dark:text-glass-tertiary">{app.location || 'Location not set'}</p>
+                                        <p className="text-xs text-gray-500 dark:text-white">{app.location || 'Location not set'}</p>
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation()
@@ -446,27 +446,27 @@ export default function ApplicationsPage() {
                             <table className="w-full text-left">
                                 <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-800/30 border-b-2 border-gray-200 dark:border-gray-700">
                                     <tr>
-                                        <th className="px-6 py-4 text-[11px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:text-primary-500 transition-colors" onClick={() => handleSort('status')}>
+                                        <th className="px-6 py-4 text-[11px] font-black text-gray-500 dark:text-white uppercase tracking-wider cursor-pointer hover:text-primary-500 transition-colors" onClick={() => handleSort('status')}>
                                             <div className="flex items-center gap-2">
                                                 Status
                                                 {sortBy === 'status' && <span className="text-primary-500">{sortOrder === 'asc' ? '↑' : '↓'}</span>}
                                             </div>
                                         </th>
-                                        <th className="px-6 py-4 text-[11px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:text-primary-500 transition-colors" onClick={() => handleSort('company')}>
+                                        <th className="px-6 py-4 text-[11px] font-black text-gray-500 dark:text-white uppercase tracking-wider cursor-pointer hover:text-primary-500 transition-colors" onClick={() => handleSort('company')}>
                                             <div className="flex items-center gap-2">
                                                 Company & Role
                                                 {sortBy === 'company' && <span className="text-primary-500">{sortOrder === 'asc' ? '↑' : '↓'}</span>}
                                             </div>
                                         </th>
-                                        <th className="px-6 py-4 text-[11px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider">Location</th>
-                                        <th className="px-6 py-4 text-[11px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:text-primary-500 transition-colors" onClick={() => handleSort('date')}>
+                                        <th className="px-6 py-4 text-[11px] font-black text-gray-500 dark:text-white uppercase tracking-wider">Location</th>
+                                        <th className="px-6 py-4 text-[11px] font-black text-gray-500 dark:text-white uppercase tracking-wider cursor-pointer hover:text-primary-500 transition-colors" onClick={() => handleSort('date')}>
                                             <div className="flex items-center gap-2">
                                                 Applied
                                                 {sortBy === 'date' && <span className="text-primary-500">{sortOrder === 'asc' ? '↑' : '↓'}</span>}
                                             </div>
                                         </th>
-                                        <th className="px-6 py-4 text-[11px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider">Last Updated</th>
-                                        <th className="px-6 py-4 text-right pr-8 text-[11px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                                        <th className="px-6 py-4 text-[11px] font-black text-gray-500 dark:text-white uppercase tracking-wider">Last Updated</th>
+                                        <th className="px-6 py-4 text-right pr-8 text-[11px] font-black text-gray-500 dark:text-white uppercase tracking-wider">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -496,16 +496,16 @@ export default function ApplicationsPage() {
                                                                 </span>
                                                             )}
                                                         </div>
-                                                        <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">{app.role}</div>
+                                                        <div className="text-xs text-gray-500 dark:text-white font-medium">{app.role}</div>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">{app.location || '—'}</span>
+                                                <span className="text-xs text-gray-600 dark:text-white font-medium">{app.location || '—'}</span>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex flex-col gap-1">
-                                                    <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">{new Date(app.applied_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                                    <span className="text-xs font-semibold text-gray-700 dark:text-white">{new Date(app.applied_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                                                     <span className="text-[10px] text-gray-400 font-medium">{timeAgo(app.applied_date)}</span>
                                                 </div>
                                             </td>
@@ -560,7 +560,7 @@ export default function ApplicationsPage() {
                     <button
                         onClick={() => setPage(currentPage - 1)}
                         disabled={currentPage === 1}
-                        className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                        className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                     >
                         <ChevronLeft size={20} />
                     </button>
@@ -572,7 +572,7 @@ export default function ApplicationsPage() {
                                 className={`min-w-10 px-3 sm:px-4 py-2 rounded-lg text-sm font-bold transition-all ${
                                     currentPage === page
                                         ? 'bg-primary-500 text-white shadow-lg'
-                                        : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                                        : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700'
                                 }`}
                             >
                                 {page}
@@ -582,7 +582,7 @@ export default function ApplicationsPage() {
                     <button
                         onClick={() => setPage(currentPage + 1)}
                         disabled={currentPage === totalPages}
-                        className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                        className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                     >
                         <ChevronRight size={20} />
                     </button>
@@ -631,7 +631,7 @@ function StatusPill({ status }: { status: string }) {
         'HR Interview': { color: 'text-violet-600 dark:text-violet-400', bg: 'bg-violet-50 dark:bg-violet-900/30', icon: '🗣️' },
         'Offer': { color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/30', icon: '✨' },
         'Rejected': { color: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-50 dark:bg-rose-900/30', icon: '❌' },
-        'Ghosted': { color: 'text-gray-600 dark:text-gray-400', bg: 'bg-gray-50 dark:bg-gray-800', icon: '👻' },
+        'Ghosted': { color: 'text-gray-600 dark:text-white', bg: 'bg-gray-50 dark:bg-gray-800', icon: '👻' },
     }
 
     const { color, bg, icon } = config[status] || config['Applied']

@@ -36,7 +36,7 @@ export default function TrashPage() {
                                 <span className="text-[10px] font-black text-glass-primary uppercase tracking-widest leading-none">{trash.length} {trash.length === 1 ? 'Item' : 'Items'}</span>
                             </div>
                         </div>
-                        <p className="text-[11px] md:text-base text-gray-700 dark:text-glass-secondary font-medium max-w-sm md:max-w-md leading-relaxed truncate md:whitespace-normal">
+                        <p className="text-[11px] md:text-base text-gray-700 dark:text-white font-medium max-w-sm md:max-w-md leading-relaxed truncate md:whitespace-normal">
                             Deleted applications stay here until purged.
                         </p>
                     </div>
@@ -45,7 +45,7 @@ export default function TrashPage() {
                 {loading && trash.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-40">
                         <Loader2 size={40} className="text-primary-500 animate-spin mb-4" />
-                        <p className="text-gray-700 dark:text-glass-secondary font-bold uppercase tracking-widest text-xs">Syncing Trash...</p>
+                        <p className="text-gray-700 dark:text-white font-bold uppercase tracking-widest text-xs">Syncing Trash...</p>
                     </div>
                 ) : trash.length === 0 ? (
                     <div className="relative group">
@@ -56,7 +56,7 @@ export default function TrashPage() {
                                 🗑️
                             </div>
                             <h3 className="text-2xl font-black text-glass-primary tracking-tight relative z-10">Trash is empty</h3>
-                            <p className="text-gray-700 dark:text-glass-secondary font-medium mt-2 text-sm max-w-[220px] text-center leading-relaxed relative z-10">
+                            <p className="text-gray-700 dark:text-white font-medium mt-2 text-sm max-w-[220px] text-center leading-relaxed relative z-10">
                                 Deleted items will appear here for recovery.
                             </p>
                         </div>
@@ -73,7 +73,7 @@ export default function TrashPage() {
                                         <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform shadow-inner border border-slate-200/70 dark:border-slate-700/60 bg-white/75 dark:bg-slate-800/70">🏢</div>
                                         <div className="min-w-0">
                                             <h3 className="font-bold text-glass-primary truncate text-base">{app.company}</h3>
-                                            <p className="text-[11px] font-black text-gray-700 dark:text-glass-secondary uppercase tracking-widest truncate mt-0.5">{app.role}</p>
+                                            <p className="text-[11px] font-black text-gray-700 dark:text-white uppercase tracking-widest truncate mt-0.5">{app.role}</p>
                                         </div>
                                     </div>
                                 </div>

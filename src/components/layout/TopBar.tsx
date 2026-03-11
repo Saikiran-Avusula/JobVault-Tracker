@@ -69,7 +69,7 @@ export default function TopBar() {
                 {/* Hamburger — mobile only */}
                 <button
                     onClick={() => setMenuOpen(true)}
-                    className="glass-button md:hidden p-2 -ml-1 text-gray-700 dark:text-glass-tertiary shrink-0"
+                    className="glass-button md:hidden p-2 -ml-1 text-gray-700 dark:text-white shrink-0"
                 >
                     <Menu size={22} strokeWidth={1.5} />
                 </button>
@@ -85,7 +85,7 @@ export default function TopBar() {
                             size={18}
                             strokeWidth={1.5}
                             className={`relative ml-4 transition-colors duration-300 
-                                ${focused ? 'text-primary-500' : 'text-gray-500 dark:text-glass-tertiary'}`}
+                                ${focused ? 'text-primary-500' : 'text-gray-500 dark:text-white'}`}
                         />
 
                         <input
@@ -115,7 +115,7 @@ export default function TopBar() {
                     <div className="h-8 w-px" style={{ background: 'var(--glass-fill-medium)' }} />
                     <button
                         onClick={toggleTheme}
-                        className="glass-button p-2.5 text-gray-700 dark:text-glass-tertiary"
+                        className="glass-button p-2.5 text-gray-700 dark:text-white"
                         title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                     >
                         {theme === 'dark' ? <Sun size={18} strokeWidth={1.5} className="text-amber-400" /> : <Moon size={18} strokeWidth={1.5} className="text-indigo-500" />}
@@ -152,7 +152,7 @@ export default function TopBar() {
                         {/* User Header */}
                         <div className="p-4 border-b border-white/10 shrink-0">
                             <div className="flex items-center justify-between mb-3">
-                                <h3 className="text-xs font-bold text-gray-500 dark:text-glass-tertiary uppercase tracking-wider">Menu</h3>
+                                <h3 className="text-xs font-bold text-gray-500 dark:text-white uppercase tracking-wider">Menu</h3>
                                 <button
                                     onClick={() => setMenuOpen(false)}
                                     className="p-1.5 rounded-lg border border-rose-400/30 text-rose-400 hover:text-rose-500 hover:border-rose-500/50 transition-colors"
@@ -168,7 +168,7 @@ export default function TopBar() {
                                     <p className="text-sm font-bold text-glass-primary truncate">
                                         {displayName}
                                     </p>
-                                    <p className="text-[10px] text-gray-500 dark:text-glass-tertiary truncate">{user?.email}</p>
+                                    <p className="text-[10px] text-gray-500 dark:text-white truncate">{user?.email}</p>
                                 </div>
                             </div>
                         </div>
@@ -206,7 +206,7 @@ export default function TopBar() {
                                 onClick={() => { navigate('/profile'); setMenuOpen(false) }}
                                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-glass-primary hover:bg-white/5 transition-colors"
                             >
-                                <User size={18} strokeWidth={1.5} className="text-gray-500 dark:text-glass-tertiary" />
+                                <User size={18} strokeWidth={1.5} className="text-gray-500 dark:text-white" />
                                 Profile Settings
                             </button>
 

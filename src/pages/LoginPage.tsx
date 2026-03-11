@@ -112,7 +112,7 @@ export default function LoginPage() {
                                     <p className="text-[11px] font-black uppercase tracking-[0.22em] text-primary-700 dark:text-primary-300">
                                         About The App
                                     </p>
-                                    <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                                    <p className="text-xs text-gray-600 dark:text-white font-medium">
                                         Personal job hunt command center
                                     </p>
                                 </div>
@@ -121,7 +121,7 @@ export default function LoginPage() {
                             <h2 className="text-[1.35rem] font-black text-gray-900 dark:text-white leading-tight">
                                 Keep applications, resumes, and follow-ups organized without losing track.
                             </h2>
-                            <p className="text-sm text-gray-700 dark:text-gray-300 mt-3 leading-relaxed">
+                            <p className="text-sm text-gray-700 dark:text-white mt-3 leading-relaxed">
                                 Sign in to track every role you apply for, store tailored resumes per company, restore deleted items, and report issues when something goes wrong.
                             </p>
 
@@ -137,7 +137,7 @@ export default function LoginPage() {
                                         <p className="text-[11px] font-black uppercase tracking-[0.16em] text-gray-900 dark:text-white">
                                             {title}
                                         </p>
-                                        <p className="text-[11px] text-gray-600 dark:text-gray-400 mt-1 leading-relaxed">
+                                        <p className="text-[11px] text-gray-600 dark:text-white mt-1 leading-relaxed">
                                             {copy}
                                         </p>
                                     </div>
@@ -210,7 +210,7 @@ export default function LoginPage() {
                             <div className="w-full border-t border-gray-300 dark:border-gray-800" />
                         </div>
                         <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-widest">
-                            <span className="bg-gray-50 dark:bg-[#020617] px-4 text-gray-600 dark:text-gray-500">Or continue with</span>
+                            <span className="bg-gray-50 dark:bg-[#020617] px-4 text-gray-600 dark:text-white">Or continue with</span>
                         </div>
                     </div>
 
@@ -229,7 +229,7 @@ export default function LoginPage() {
 
                     <button
                         onClick={() => setIsSignUp(!isSignUp)}
-                        className="w-full text-center text-xs text-gray-600 dark:text-gray-400 mt-8 hover:text-gray-800 dark:hover:text-gray-300 transition-colors group"
+                        className="w-full text-center text-xs text-gray-600 dark:text-white mt-8 hover:text-gray-800 dark:hover:text-white transition-colors group"
                     >
                         {isSignUp ? 'Already have an account? ' : 'Need an account? '}
                         <span className="text-gray-900 dark:text-white font-bold border-gray-300 dark:border-white/50 rounded-full border-2 px-3 py-1 group-hover:border-gray-500 dark:group-hover:border-white transition-all ml-1 inline-block">

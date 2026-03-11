@@ -83,6 +83,11 @@ export default function ApplicationDetailPage() {
         setShowPdfViewer(false)
     }, [app])
 
+    useEffect(() => {
+        if (!isEditingJD) return
+        setTempJd(app?.jd_text ?? '')
+    }, [isEditingJD, app?.jd_text])
+
     const handleNotesChange = useCallback((value: string) => {
         setLocalNotes(value)
         if (notesTimerRef.current) clearTimeout(notesTimerRef.current)
@@ -144,6 +149,25 @@ export default function ApplicationDetailPage() {
         toast.success(`Moved to ${status}`)
     }
 
+    const handleSaveJd = () => {
+        const nextJd = tempJd.trim()
+        const currentJd = app.jd_text?.trim() || ''
+
+        if (!nextJd && currentJd) {
+            toast.error('Job description cannot be cleared accidentally. Keep text or remove it intentionally later.')
+            return
+        }
+
+        if (nextJd === currentJd) {
+            setIsEditingJD(false)
+            return
+        }
+
+        updateApplication(app.id, { jd_text: nextJd })
+        setIsEditingJD(false)
+        toast.success('Job description updated')
+    }
+
     const handleDelete = async () => {
         await moveToTrash(app.id, true)
         navigate('/applications')
@@ -174,10 +198,10 @@ export default function ApplicationDetailPage() {
     return (
         <div className="max-w-5xl mx-auto space-y-5 md:space-y-6 pb-20">
             {/* Header */}
-            <div className="sticky top-0 z-30 bg-white/75 dark:bg-[#060816]/80 backdrop-blur-md py-3 -mx-4 px-4 mb-4 flex items-center justify-between gap-3 border-b border-black/5 dark:border-white/10 md:relative md:top-auto md:bg-transparent md:p-0 md:m-0 md:mb-8 md:border-none">
+            <div className="sticky top-0 z-30 bg-white/75 py-3 -mx-4 px-4 mb-4 flex items-center justify-between gap-3 border-b border-black/5 dark:border-white/10 md:relative md:top-auto md:bg-transparent md:p-0 md:m-0 md:mb-8 md:border-none">
                 <button
                     onClick={() => navigate(-1)}
-                    className="glass-button flex items-center gap-1.5 px-4 py-2 md:px-5 md:py-2.5 text-xs md:text-sm font-black uppercase tracking-wider text-gray-700 dark:text-glass-tertiary"
+                    className="glass-button flex items-center gap-1.5 px-4 py-2 md:px-5 md:py-2.5 text-xs md:text-sm font-black uppercase tracking-wider text-gray-700 dark:text-white dark:border-white/15 dark:bg-white/10"
                 >
                     <ChevronLeft size={16} strokeWidth={1.5} /> Back
                 </button>
@@ -208,7 +232,7 @@ export default function ApplicationDetailPage() {
                                     <div className="flex items-center gap-2 justify-center md:justify-start">
                                         <button
                                             onClick={() => setIsEditingCompany(false)}
-                                            className="px-3 py-1 text-xs font-bold text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                                            className="px-3 py-1 text-xs font-bold text-gray-600 dark:text-white hover:text-gray-900 dark:hover:text-white transition-colors"
                                         >
                                             Cancel
                                         </button>
@@ -272,7 +296,7 @@ export default function ApplicationDetailPage() {
                             ) : (
                                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 md:gap-3 mt-2">
                                     <div className="flex items-center gap-2 group">
-                                        <p className="text-base md:text-lg font-bold text-gray-700 dark:text-glass-secondary">{app.role}</p>
+                                        <p className="text-base md:text-lg font-bold text-gray-700 dark:text-white">{app.role}</p>
                                         <button
                                             onClick={() => {
                                                 setTempRole(app.role)
@@ -296,7 +320,7 @@ export default function ApplicationDetailPage() {
                                                 />
                                                 <button
                                                     onClick={() => setIsEditingLocation(false)}
-                                                    className="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                                                    className="text-xs text-gray-600 dark:text-white hover:text-gray-900 dark:hover:text-white"
                                                 >
                                                     ✕
                                                 </button>
@@ -316,7 +340,7 @@ export default function ApplicationDetailPage() {
                                         <>
                                             <span className="hidden md:inline w-1.5 h-1.5 rounded-full bg-gray-800" />
                                             <div className="flex items-center gap-1.5 group/location">
-                                                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">📍 {app.location || 'Add location'}</span>
+                                                <span className="text-sm font-medium text-gray-600 dark:text-white">📍 {app.location || 'Add location'}</span>
                                                 <button
                                                     onClick={() => {
                                                         setTempLocation(app.location || '')
@@ -377,7 +401,7 @@ export default function ApplicationDetailPage() {
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
                         <div className="flex items-center gap-2">
                             <div className="h-px w-10 md:w-14 bg-gray-100 dark:bg-gray-800/50" />
-                            <span className="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-[0.2em] whitespace-nowrap">Current Status</span>
+                            <span className="text-[10px] font-black text-gray-600 dark:text-white uppercase tracking-[0.2em] whitespace-nowrap">Current Status</span>
                         </div>
 
                         <div ref={statusMenuRef} className="relative w-full md:w-auto md:min-w-[290px]">
@@ -431,7 +455,7 @@ export default function ApplicationDetailPage() {
                             <h3 className="text-xl md:text-2xl font-black text-glass-primary mb-2 md:mb-3">
                                 {currentStatus === 'Ghosted' ? 'No Response Yet' : 'This Outcome Is Not Final'}
                             </h3>
-                            <p className="text-xs md:text-sm text-gray-700 dark:text-glass-secondary max-w-lg mx-auto leading-relaxed">
+                            <p className="text-xs md:text-sm text-gray-700 dark:text-white max-w-lg mx-auto leading-relaxed">
                                 {currentStatus === 'Ghosted'
                                     ? 'No reply is frustrating, but it does not reduce your value. Close this loop, keep momentum, and focus on better opportunities.'
                                     : 'Rejection is part of the process. Capture what you learned, refine your approach, and move to the next opportunity with confidence.'}
@@ -579,7 +603,7 @@ export default function ApplicationDetailPage() {
                     // Job Progress
                     <div className="bg-white dark:bg-[#020617] rounded-[2rem] border border-gray-200 dark:border-gray-800/50 shadow-premium p-5 md:p-10 overflow-hidden relative group">
                         <div className="flex items-center justify-between mb-8 md:mb-12">
-                                <h3 className="text-[10px] md:text-[11px] uppercase font-black tracking-[0.2em] text-gray-600 dark:text-gray-400">Job Progress</h3>
+                                <h3 className="text-[10px] md:text-[11px] uppercase font-black tracking-[0.2em] text-gray-600 dark:text-white">Job Progress</h3>
                             <div className="flex items-baseline gap-1 bg-primary-500/10 px-3 py-1 md:px-4 md:py-1.5 rounded-full border border-primary-500/20">
                                 <span className="text-base md:text-lg font-black text-primary-400">{Math.round(((currentStageIndex + 1) / STAGES.length) * 100)}</span>
                                 <span className="text-[10px] md:text-xs font-bold text-primary-500 uppercase tracking-widest">% Completed</span>
@@ -628,13 +652,13 @@ export default function ApplicationDetailPage() {
                                                         ? 'border-primary-500 bg-primary-500 text-white shadow-[0_0_20px_rgba(59,130,246,0.4)] dark:shadow-[0_0_20px_rgba(255,255,255,0.6)] scale-110'
                                                         : isPast
                                                             ? 'border-emerald-500 bg-white dark:bg-[#020617] text-emerald-600 dark:text-emerald-400 opacity-100'
-                                                            : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-[#020617] text-gray-400 dark:text-gray-600'}`}
+                                                            : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-[#020617] text-gray-400 dark:text-white/70'}`}
                                             >
                                                 <Icon className="w-4 h-4 md:w-6 md:h-6 relative z-10" />
                                             </div>
                                             <div className="absolute -bottom-8 md:-bottom-10 left-1/2 -translate-x-1/2 flex justify-center w-24 md:w-32">
                                                 <span className={`text-[8.5px] md:text-[11px] font-black tracking-widest transition-colors duration-300 text-center
-                                                    ${isCompletedOffer ? 'text-emerald-400' : isCurr ? 'text-gray-900 dark:text-white' : isPast ? 'text-emerald-500' : 'text-gray-400 dark:text-gray-600'}`}>
+                                                    ${isCompletedOffer ? 'text-emerald-400' : isCurr ? 'text-gray-900 dark:text-white' : isPast ? 'text-emerald-500' : 'text-gray-400 dark:text-white/70'}`}>
                                                     {s.toUpperCase()}
                                                 </span>
                                             </div>
@@ -652,7 +676,7 @@ export default function ApplicationDetailPage() {
                         {/* JD */}
                         <section>
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-                                <h3 className="flex items-center gap-2 text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                                <h3 className="flex items-center gap-2 text-xs font-bold text-gray-600 dark:text-white uppercase tracking-wider">
                                     <AlignLeft size={14} /> Job Description
                                 </h3>
                                 {isEditingJD ? (
@@ -664,11 +688,7 @@ export default function ApplicationDetailPage() {
                                             Cancel
                                         </button>
                                         <button
-                                            onClick={() => {
-                                                updateApplication(app.id, { jd_text: tempJd })
-                                                setIsEditingJD(false)
-                                                toast.success('Job description updated')
-                                            }}
+                                            onClick={handleSaveJd}
                                             className="text-[11px] font-bold text-primary-500 hover:text-primary-400 uppercase tracking-widest bg-primary-500/10 px-3 py-1.5 rounded-full"
                                         >
                                             Done
@@ -677,7 +697,6 @@ export default function ApplicationDetailPage() {
                                 ) : (
                                     <button
                                         onClick={() => {
-                                            setTempJd(app.jd_text || '')
                                             setIsEditingJD(true)
                                         }}
                                         className="text-[11px] font-bold text-primary-500 hover:text-primary-600 uppercase tracking-widest"
@@ -708,7 +727,7 @@ export default function ApplicationDetailPage() {
                             ) : (
                             <div className="glass-input p-5 text-sm text-glass-primary leading-relaxed whitespace-pre-wrap font-mono min-h-[200px] break-words overflow-hidden">
                                     {app.jd_text ? app.jd_text : (
-                                        <span className="text-gray-500 dark:text-glass-tertiary italic">No job description added yet. Click Edit to add one.</span>
+                                        <span className="text-gray-500 dark:text-white italic">No job description added yet. Click Edit to add one.</span>
                                     )}
                                 </div>
                             )}
@@ -720,7 +739,7 @@ export default function ApplicationDetailPage() {
                         {/* Application URL */}
                         <section>
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-                                <h3 className="flex items-center gap-2 text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                                <h3 className="flex items-center gap-2 text-xs font-bold text-gray-600 dark:text-white uppercase tracking-wider">
                                     <Globe size={14} /> Application URL
                                 </h3>
                             </div>
@@ -737,7 +756,7 @@ export default function ApplicationDetailPage() {
                                         <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2">
                                             <button
                                                 onClick={() => setIsEditingUrl(false)}
-                                                className="glass-button px-4 py-1.5 text-xs font-bold text-gray-700 dark:text-glass-tertiary"
+                                                className="glass-button px-4 py-1.5 text-xs font-bold text-gray-700 dark:text-white"
                                             >
                                                 Cancel
                                             </button>
@@ -773,14 +792,14 @@ export default function ApplicationDetailPage() {
                                                 setTempUrl(app.application_url!)
                                                 setIsEditingUrl(true)
                                             }}
-                                            className="text-[11px] font-bold text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white uppercase tracking-widest shrink-0"
+                                            className="text-[11px] font-bold text-gray-600 dark:text-white hover:text-gray-900 dark:hover:text-white uppercase tracking-widest shrink-0"
                                         >
                                             Edit
                                         </button>
                                     </div>
                                 ) : (
                                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                                        <p className="text-xs text-gray-600 dark:text-gray-400 italic">No application URL provided.</p>
+                                        <p className="text-xs text-gray-600 dark:text-white italic">No application URL provided.</p>
                                         <button
                                             onClick={() => {
                                                 setTempUrl('')
@@ -799,13 +818,13 @@ export default function ApplicationDetailPage() {
                         <section>
                             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
                                 <div>
-                                    <h3 className="flex items-center gap-2 text-xs font-bold text-gray-700 dark:text-glass-secondary uppercase tracking-wider">
-                                        <span className="w-5 h-5 flex items-center justify-center bg-rose-500 dark:bg-rose-300 text-white dark:text-rose-950 shrink-0 rounded-md">
+                                    <h3 className="flex items-center gap-2 text-xs font-bold text-gray-700 dark:text-white uppercase tracking-wider">
+                                        <span className="w-5 h-5 flex items-center justify-center bg-rose-500 dark:bg-rose-400/20 text-white dark:text-rose-200 shrink-0 rounded-md">
                                             <FileText size={12} strokeWidth={1.9} />
                                         </span>
                                         Tailored Resume
                                     </h3>
-                                    <p className="text-[10px] text-gray-500 mt-0.5 font-medium ml-5">Max file size: 5MB (.pdf)</p>
+                                    <p className="text-[10px] text-gray-500 dark:text-white mt-0.5 font-medium ml-5">Max file size: 5MB (.pdf)</p>
                                 </div>
                                 <label className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 text-[11px] font-bold cursor-pointer hover:bg-primary-100 transition-colors border border-primary-100 dark:border-primary-900/30 w-full sm:w-auto">
                                     {isUploading ? (
@@ -850,12 +869,12 @@ export default function ApplicationDetailPage() {
                                 {app.resume_file_name ? (
                                     <div className="flex flex-col gap-3">
                                         <div className="flex items-center gap-3 p-3 rounded-xl border border-white/10 shadow-sm group/resume" style={{ backdropFilter: 'var(--glass-blur-xs)', background: 'var(--glass-fill-light)' }}>
-                                            <div className="w-10 h-10 flex items-center justify-center bg-rose-500 dark:bg-rose-300 text-white dark:text-rose-950 shrink-0" style={{ borderRadius: 'var(--radius-md)' }}>
+                                            <div className="w-10 h-10 flex items-center justify-center bg-rose-500 dark:bg-rose-400/20 text-white dark:text-rose-200 shrink-0" style={{ borderRadius: 'var(--radius-md)' }}>
                                                 <FileText size={20} strokeWidth={1.9} />
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-sm font-semibold text-glass-primary truncate">{app.resume_file_name}</p>
-                                                <p className="text-[11px] text-gray-600 dark:text-gray-400 uppercase font-bold tracking-tighter">Uploaded Resume</p>
+                                                <p className="text-[11px] text-gray-600 dark:text-white uppercase font-bold tracking-tighter">Uploaded Resume</p>
                                             </div>
                                             <button
                                                 onClick={() => setShowResumeConfirm(true)}
@@ -874,7 +893,7 @@ export default function ApplicationDetailPage() {
                                         </button>
                                     </div>
                                 ) : (
-                                    <p className="text-xs text-gray-600 dark:text-gray-400 italic">No file uploaded yet. Upload the tailored resume PDF used for this role.</p>
+                                    <p className="text-xs text-gray-600 dark:text-white italic">No file uploaded yet. Upload the tailored resume PDF used for this role.</p>
                                 )}
                             </div>
                         </section>
@@ -882,7 +901,7 @@ export default function ApplicationDetailPage() {
                         {/* Skill Gaps */}
                         <section>
                             <div className="flex items-center justify-between mb-4">
-                                <h3 className="flex items-center gap-2 text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                                <h3 className="flex items-center gap-2 text-xs font-bold text-gray-600 dark:text-white uppercase tracking-wider">
                                     <Tag size={14} /> Skill Gaps to Close
                                 </h3>
                             </div>
@@ -903,7 +922,7 @@ export default function ApplicationDetailPage() {
 
                         {/* Notes */}
                         <section>
-                            <h3 className="flex items-center gap-2 text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-4">
+                            <h3 className="flex items-center gap-2 text-xs font-bold text-gray-600 dark:text-white uppercase tracking-wider mb-4">
                                 <CalendarCheck size={14} /> Interview Notes
                             </h3>
                             <textarea
@@ -953,7 +972,7 @@ export default function ApplicationDetailPage() {
                                 </div>
                                 <div className="min-w-0 flex-1">
                                     <h2 className="text-sm sm:text-lg font-bold text-glass-primary truncate">{app.resume_file_name}</h2>
-                                    <p className="text-[10px] sm:text-xs text-gray-500 dark:text-glass-tertiary truncate">Tailored Resume for {app.company}</p>
+                                    <p className="text-[10px] sm:text-xs text-gray-500 dark:text-white truncate">Tailored Resume for {app.company}</p>
                                 </div>
                             </div>
                             <button

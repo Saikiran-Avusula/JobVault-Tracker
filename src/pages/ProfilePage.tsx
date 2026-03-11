@@ -107,7 +107,7 @@ export default function ProfilePage() {
 
                             <div className="min-w-0 flex flex-col items-center">
                                 <h2 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white">{displayName}</h2>
-                                <p className="text-gray-600 dark:text-gray-300 font-medium text-sm mt-1 break-all">{user?.email}</p>
+                                <p className="text-gray-600 dark:text-white font-medium text-sm mt-1 break-all">{user?.email}</p>
                                 <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
                                     <span className="px-3 py-1.5 rounded-full bg-primary-500/10 text-primary-600 dark:text-primary-300 text-[11px] font-black uppercase tracking-[0.2em]">
                                         {provider}
@@ -121,7 +121,7 @@ export default function ProfilePage() {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="glass-panel p-5">
-                                <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-gray-500 dark:text-glass-tertiary">
+                                <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-gray-500 dark:text-white">
                                     <ShieldCheck size={14} />
                                     Account ID
                                 </div>
@@ -136,18 +136,18 @@ export default function ProfilePage() {
                             </div>
 
                             <div className="glass-panel p-5">
-                                <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-gray-500 dark:text-glass-tertiary">
+                                <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-gray-500 dark:text-white">
                                     <UserRound size={14} />
                                     Session Info
                                 </div>
                                 <div className="mt-3 space-y-2 text-sm text-black dark:text-white">
-                                    <p><span className="text-gray-500 dark:text-glass-tertiary mr-2">Provider:</span>{provider}</p>
-                                    <p><span className="text-gray-500 dark:text-glass-tertiary mr-2">Email:</span>{user?.email || 'Not available'}</p>
+                                    <p><span className="text-gray-500 dark:text-white mr-2">Provider:</span>{provider}</p>
+                                    <p><span className="text-gray-500 dark:text-white mr-2">Email:</span>{user?.email || 'Not available'}</p>
                                 </div>
                             </div>
 
                             <div className="glass-panel p-5">
-                                <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-gray-500 dark:text-glass-tertiary">
+                                <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-gray-500 dark:text-white">
                                     <CalendarDays size={14} />
                                     Joined
                                 </div>
@@ -157,7 +157,7 @@ export default function ProfilePage() {
                             </div>
 
                             <div className="glass-panel p-5">
-                                <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-gray-500 dark:text-glass-tertiary">
+                                <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-gray-500 dark:text-white">
                                     <Mail size={14} />
                                     Last Sign In
                                 </div>
@@ -168,15 +168,15 @@ export default function ProfilePage() {
                         </div>
 
                         <div className="glass-panel p-5 md:p-6 text-center">
-                            <div className="flex items-center justify-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-gray-500 dark:text-glass-tertiary">
+                            <div className="flex items-center justify-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-gray-500 dark:text-white">
                                 <Code2 size={14} />
                                 Developer Connect
                             </div>
                             <h3 className="mt-3 text-xl font-black text-black dark:text-white">Saikiran Avusula</h3>
-                            <p className="mt-2 flex items-center justify-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                            <p className="mt-2 flex items-center justify-center gap-2 text-sm text-gray-700 dark:text-white">
                                 Developed with <Heart size={14} className="fill-current text-rose-500 dark:text-rose-300" /> for job seekers
                             </p>
-                            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                            <p className="mt-2 text-sm text-gray-600 dark:text-white">
                                 Need help, feedback, or want to connect about the app? Reach out here after logging in.
                             </p>
 
@@ -213,7 +213,7 @@ export default function ProfilePage() {
                             <AlertTriangle size={18} />
                             <h3 className="text-sm font-black uppercase tracking-widest">Danger Zone</h3>
                         </div>
-                        <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-6">
+                        <p className="text-gray-500 dark:text-white text-sm leading-relaxed mb-6">
                             Deleting your account is permanent. All your job applications, resumes, issue reports, and tracking history will be removed.
                         </p>
                     </div>

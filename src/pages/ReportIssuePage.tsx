@@ -53,9 +53,9 @@ const AREA_STYLES: Record<IssueArea, string> = {
 }
 
 const SEVERITY_STYLES: Record<IssueSeverity, string> = {
-    low: 'bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-300',
-    medium: 'bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-300',
-    high: 'bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-300',
+    low: 'bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-white',
+    medium: 'bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-white',
+    high: 'bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-white',
 }
 
 type AdminDraft = {
@@ -243,8 +243,8 @@ export default function ReportIssuePage() {
                     <h1 className="text-2xl md:text-3xl font-black text-glass-primary tracking-tight">
                         {isAdmin ? 'Admin Report Issues' : 'Report Issue'}
                     </h1>
-                    <p className="text-sm text-gray-700 dark:text-glass-secondary">{headingText}</p>
-                    {!isAdmin && <p className="text-xs text-gray-500 dark:text-glass-tertiary mt-1">Admin contact: {ADMIN_EMAIL}</p>}
+                    <p className="text-sm text-gray-700 dark:text-white">{headingText}</p>
+                    {!isAdmin && <p className="text-xs text-gray-500 dark:text-white mt-1">Admin contact: {ADMIN_EMAIL}</p>}
                 </div>
             </div>
 
@@ -253,9 +253,9 @@ export default function ReportIssuePage() {
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                         <div>
                             <h2 className="text-xl font-black text-glass-primary">Submit a Bug Report</h2>
-                            <p className="text-sm text-gray-700 dark:text-glass-secondary">Include the issue details, affected page, and an optional screenshot proof.</p>
+                            <p className="text-sm text-gray-700 dark:text-white">Include the issue details, affected page, and an optional screenshot proof.</p>
                         </div>
-                        <div className="text-[11px] uppercase tracking-[0.18em] font-black text-gray-500 dark:text-glass-tertiary break-all">
+                        <div className="text-[11px] uppercase tracking-[0.18em] font-black text-gray-500 dark:text-white break-all">
                             {user?.id ? `User ID: ${user.id}` : 'Signed out'}
                         </div>
                     </div>
@@ -342,11 +342,11 @@ export default function ReportIssuePage() {
                                     onChange={(e) => setAttachmentFile(e.target.files?.[0] || null)}
                                 />
                             </label>
-                            <p className="text-xs text-gray-500 dark:text-glass-tertiary mt-2">
+                            <p className="text-xs text-gray-500 dark:text-white mt-2">
                                 Optional. PNG, JPG, JPEG, or WEBP up to 5MB.
                             </p>
                             {attachmentFile && (
-                                <p className="text-xs text-gray-700 dark:text-glass-secondary mt-2">
+                                <p className="text-xs text-gray-700 dark:text-white mt-2">
                                     Selected: {attachmentFile.name}
                                 </p>
                             )}
@@ -373,23 +373,23 @@ export default function ReportIssuePage() {
                         <h2 className="text-xl font-black text-glass-primary">
                             {isAdmin ? 'Admin Report Issues' : 'Your Recent Reports'}
                         </h2>
-                        <p className="text-sm text-gray-700 dark:text-glass-secondary">
+                        <p className="text-sm text-gray-700 dark:text-white">
                             {isAdmin
                                 ? 'Track affected users, review screenshots, and move issues through the workflow.'
                                 : 'Track admin progress on the bugs you reported.'}
                         </p>
                     </div>
-                    <span className="text-xs uppercase tracking-[0.25em] font-black text-gray-500 dark:text-glass-tertiary">
+                    <span className="text-xs uppercase tracking-[0.25em] font-black text-gray-500 dark:text-white">
                         {visibleReports.length} report{visibleReports.length === 1 ? '' : 's'}
                     </span>
                 </div>
 
                 {loadingReports ? (
-                    <div className="py-8 flex items-center gap-2 text-gray-500 dark:text-glass-tertiary">
+                    <div className="py-8 flex items-center gap-2 text-gray-500 dark:text-white">
                         <Loader2 size={16} className="animate-spin" /> Loading reports...
                     </div>
                 ) : visibleReports.length === 0 ? (
-                    <p className="text-sm text-gray-500 dark:text-glass-tertiary">{isAdmin ? 'No user reports yet.' : 'No reports yet.'}</p>
+                    <p className="text-sm text-gray-500 dark:text-white">{isAdmin ? 'No user reports yet.' : 'No reports yet.'}</p>
                 ) : (
                     <div className="space-y-4">
                         {visibleReports.map((report) => {
@@ -418,10 +418,10 @@ export default function ReportIssuePage() {
                                                 </span>
                                             </div>
                                             <p className="text-base font-bold text-glass-primary">{report.title}</p>
-                                            <p className="text-sm text-gray-700 dark:text-glass-secondary whitespace-pre-wrap">{report.description}</p>
+                                            <p className="text-sm text-gray-700 dark:text-white whitespace-pre-wrap">{report.description}</p>
                                         </div>
 
-                                        <div className="w-full md:w-auto md:min-w-[220px] text-left md:text-right text-[11px] text-gray-500 dark:text-glass-tertiary space-y-1 break-words rounded-2xl md:rounded-none bg-black/[0.03] dark:bg-white/[0.03] p-3 md:p-0">
+                                        <div className="w-full md:w-auto md:min-w-[220px] text-left md:text-right text-[11px] text-gray-500 dark:text-white space-y-1 break-words rounded-2xl md:rounded-none bg-black/[0.03] dark:bg-white/[0.03] p-3 md:p-0">
                                             <p>Created: {new Date(report.created_at).toLocaleString()}</p>
                                             <p>Updated: {new Date(report.updated_at).toLocaleString()}</p>
                                             <p>User ID: {report.user_id}</p>
@@ -432,7 +432,7 @@ export default function ReportIssuePage() {
 
                                     {report.attachment_path && attachmentUrls[report.id] && (
                                         <div className="space-y-2">
-                                            <p className="text-xs uppercase tracking-widest font-black text-gray-500 dark:text-glass-tertiary">Screenshot Proof</p>
+                                            <p className="text-xs uppercase tracking-widest font-black text-gray-500 dark:text-white">Screenshot Proof</p>
                                             <div className="flex flex-col gap-3 md:flex-row md:items-start">
                                                 <img
                                                     src={attachmentUrls[report.id]}
@@ -458,7 +458,7 @@ export default function ReportIssuePage() {
                                                 <MessageSquareText size={15} />
                                                 Team Reply
                                             </div>
-                                            <p className="text-sm text-black dark:text-glass-secondary mt-2 whitespace-pre-wrap">{report.admin_message}</p>
+                                            <p className="text-sm text-black dark:text-white mt-2 whitespace-pre-wrap">{report.admin_message}</p>
                                         </div>
                                     )}
 
@@ -466,7 +466,7 @@ export default function ReportIssuePage() {
                                         <div className="space-y-4">
                                             <div className="grid grid-cols-1 md:grid-cols-[220px,1fr] gap-4 items-start">
                                                 <label className="space-y-1">
-                                                    <span className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-glass-tertiary">Status</span>
+                                                    <span className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-white">Status</span>
                                                     <select
                                                         value={draft.status}
                                                         onChange={(e) =>
@@ -487,7 +487,7 @@ export default function ReportIssuePage() {
                                                 </label>
 
                                                 <label className="space-y-1 block">
-                                                    <span className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-glass-tertiary">Admin Reply</span>
+                                                    <span className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-white">Admin Reply</span>
                                                     <textarea
                                                         value={draft.admin_message}
                                                         onChange={(e) =>

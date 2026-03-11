@@ -117,7 +117,7 @@ export default function NewJobModal({ open, onClose }: Props) {
                         </div>
                         <div>
                             <h2 className="text-xl font-bold text-glass-primary">New Application</h2>
-                            <p className="text-xs text-gray-500 dark:text-glass-tertiary">Add a new job to your vault</p>
+                            <p className="text-xs text-gray-500 dark:text-white">Add a new job to your vault</p>
                         </div>
                     </div>
                     <button onClick={onClose} className="p-2 rounded-lg border border-rose-400/30 text-rose-400 hover:text-rose-500 hover:border-rose-500/50 transition-colors">
@@ -132,7 +132,7 @@ export default function NewJobModal({ open, onClose }: Props) {
                                 <Bookmark size={16} className="text-primary-500" />
                                 <select
                                     onChange={(e) => e.target.value && handleLoadTemplate(e.target.value)}
-                                    className="flex-1 bg-transparent text-sm font-medium text-gray-700 dark:text-gray-300 outline-none cursor-pointer"
+                                    className="flex-1 bg-transparent text-sm font-medium text-gray-700 dark:text-white outline-none cursor-pointer"
                                     defaultValue=""
                                 >
                                     <option value="">Load from template...</option>
@@ -145,7 +145,7 @@ export default function NewJobModal({ open, onClose }: Props) {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-1.5">
-                                <label className="text-[11px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                                <label className="text-[11px] font-bold text-gray-600 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
                                     <Globe size={12} /> Company Name
                                 </label>
                                 <input
@@ -157,7 +157,7 @@ export default function NewJobModal({ open, onClose }: Props) {
                                 />
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-[11px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                                <label className="text-[11px] font-bold text-gray-600 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
                                     <Briefcase size={12} /> Job Role
                                 </label>
                                 <input
@@ -171,7 +171,7 @@ export default function NewJobModal({ open, onClose }: Props) {
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-[11px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <label className="text-[11px] font-bold text-gray-600 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
                                 📍 Location
                             </label>
                             <input
@@ -184,7 +184,7 @@ export default function NewJobModal({ open, onClose }: Props) {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-1.5">
-                                <label className="text-[11px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                                <label className="text-[11px] font-bold text-gray-600 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
                                     <Calendar size={12} /> Follow-up Date
                                 </label>
                                 <input
@@ -197,7 +197,7 @@ export default function NewJobModal({ open, onClose }: Props) {
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-[11px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <label className="text-[11px] font-bold text-gray-600 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
                                 <Globe size={12} /> Application URL (Optional)
                             </label>
                             <input
@@ -209,7 +209,7 @@ export default function NewJobModal({ open, onClose }: Props) {
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-[11px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <label className="text-[11px] font-bold text-gray-600 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
                                 <AlignLeft size={12} /> Job Description
                             </label>
                             <div className="flex items-center justify-between mb-1">
@@ -259,7 +259,7 @@ export default function NewJobModal({ open, onClose }: Props) {
                                         </div>
                                         <div>
                                             <p className="text-sm font-bold text-gray-900 dark:text-white">Upload Tailored Resume</p>
-                                            <p className="text-[10px] text-gray-600 dark:text-gray-400 font-medium">
+                                            <p className="text-[10px] text-gray-600 dark:text-white font-medium">
                                                 {selectedFile?.name || 'Select the PDF version sent for this role'}
                                             </p>
                                         </div>
@@ -274,7 +274,7 @@ export default function NewJobModal({ open, onClose }: Props) {
                                     />
                                     <label
                                         htmlFor="resume-upload"
-                                        className="px-5 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all cursor-pointer shadow-sm hover:shadow-md"
+                                        className="px-5 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full text-xs font-bold text-gray-600 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 transition-all cursor-pointer shadow-sm hover:shadow-md"
                                     >
                                         {selectedFile ? 'Change' : 'Browse'}
                                     </label>
@@ -287,7 +287,7 @@ export default function NewJobModal({ open, onClose }: Props) {
                         <button
                             type="button"
                             onClick={onClose}
-                            className="glass-button px-6 py-2.5 text-sm font-bold text-gray-800 dark:text-glass-secondary"
+                            className="glass-button px-6 py-2.5 text-sm font-bold text-gray-800 dark:text-white"
                         >
                             Cancel
                         </button>
