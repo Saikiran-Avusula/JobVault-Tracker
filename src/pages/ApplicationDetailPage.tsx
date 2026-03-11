@@ -4,17 +4,19 @@ import {
     ChevronLeft, Trash2,
     CalendarCheck, AlignLeft, FileText, Tag,
     Plus, Globe,
-    FileEdit, Laptop, Calendar, Sparkles, Check
+    FileEdit, Laptop, Calendar, Sparkles, Check, XCircle, Ghost, Users, ChevronDown
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { useJobStore } from '../store/useJobStore'
 import { formatLocalTime } from '../lib/utils'
 import type { JobApplication, JobStatus } from '../types/job'
 import ConfirmModal from '../components/ConfirmModal'
 import toast from 'react-hot-toast'
-import { getResumeUrl, fetchApplicationById } from '../services/applicationService'
+import { getResumeUrl, fetchApplicationById, recoverResumeReference } from '../services/applicationService'
 
 
-const STAGES: JobStatus[] = ['Applied', 'OA', 'Interview', 'Offer']
+const STAGES = ['Applied', 'OA', 'Technical Interview', 'HR Interview', 'Offer'] as const satisfies readonly JobStatus[]
+const STATUS_OPTIONS: JobStatus[] = ['Applied', 'OA', 'Technical Interview', 'HR Interview', 'Offer', 'Rejected', 'Ghosted']
 
 export default function ApplicationDetailPage() {
     const { id } = useParams()
@@ -36,45 +38,78 @@ export default function ApplicationDetailPage() {
     const [showPdfViewer, setShowPdfViewer] = useState(false)
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
     const [showResumeConfirm, setShowResumeConfirm] = useState(false)
+    const [showStatusMenu, setShowStatusMenu] = useState(false)
     const [localNotes, setLocalNotes] = useState(app?.notes ?? '')
     const [signedResumeUrl, setSignedResumeUrl] = useState<string | null>(null)
+    const [loadingById, setLoadingById] = useState(!applications.find(a => a.id === id))
     const notesTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+    const statusMenuRef = useRef<HTMLDivElement | null>(null)
 
     // Fetch application if not in store
     useEffect(() => {
+        let active = true
         const loadApp = async () => {
             if (!id) return
             const foundInStore = applications.find(a => a.id === id)
             if (foundInStore) {
+                if (!active) return
                 setApp(foundInStore)
-            } else if (!loading) {
+                setLoadingById(false)
+            } else {
+                if (!active) return
+                setLoadingById(true)
                 try {
                     const fetchedApp = await fetchApplicationById(id)
+                    if (!active) return
                     setApp(fetchedApp)
                 } catch {
+                    if (!active) return
                     setApp(null)
+                } finally {
+                    if (active) setLoadingById(false)
                 }
             }
         }
         loadApp()
-    }, [id, applications, loading])
+        return () => {
+            active = false
+        }
+    }, [id, applications])
 
     // Sync local state when app changes (e.g. navigating between apps)
     useEffect(() => {
         setLocalNotes(app?.notes ?? '')
         setSignedResumeUrl(null)
         setShowPdfViewer(false)
-    }, [app?.id])
+    }, [app])
 
     const handleNotesChange = useCallback((value: string) => {
         setLocalNotes(value)
         if (notesTimerRef.current) clearTimeout(notesTimerRef.current)
+        if (!app) return
+        const appId = app.id
         notesTimerRef.current = setTimeout(() => {
-            updateApplication(app!.id, { notes: value })
+            updateApplication(appId, { notes: value })
         }, 600)
-    }, [app?.id, updateApplication])
+    }, [app, updateApplication])
 
-    if (loading) {
+    useEffect(() => {
+        return () => {
+            if (notesTimerRef.current) clearTimeout(notesTimerRef.current)
+        }
+    }, [])
+
+    useEffect(() => {
+        const onPointerDown = (event: MouseEvent) => {
+            if (!statusMenuRef.current) return
+            if (statusMenuRef.current.contains(event.target as Node)) return
+            setShowStatusMenu(false)
+        }
+        document.addEventListener('mousedown', onPointerDown)
+        return () => document.removeEventListener('mousedown', onPointerDown)
+    }, [])
+
+    if (loadingById || (loading && !app)) {
         return (
             <div className="flex flex-col items-center justify-center h-full py-20">
                 <div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mb-4" />
@@ -87,13 +122,21 @@ export default function ApplicationDetailPage() {
         return (
             <div className="flex flex-col items-center justify-center h-full py-20">
                 <p className="text-gray-500 mb-4">Application not found</p>
-                <button onClick={() => navigate('/applications')} className="px-5 py-2 rounded-full bg-primary-900/20 text-primary-400 font-bold hover:bg-primary-900/40 transition-colors">Back to Applications</button>
+                <button
+                    onClick={() => navigate('/applications')}
+                    className="glass-button px-6 py-2.5 text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-white"
+                    style={{ background: 'var(--tint-blue)' }}
+                >
+                    Explore Next Applications
+                </button>
             </div>
         )
     }
 
     const currentStatus = app.status
-    const currentStageIndex = STAGES.indexOf(currentStatus as any)
+    const normalizedStage = currentStatus === 'Interview' ? 'Technical Interview' : currentStatus
+    const currentStageIndex = STAGES.indexOf(normalizedStage as (typeof STAGES)[number])
+    const statusSelectorValue = currentStatus === 'Interview' ? 'Technical Interview' : currentStatus
 
     const handleUpdateStatus = (status: JobStatus) => {
         if (status === app.status) return
@@ -107,37 +150,52 @@ export default function ApplicationDetailPage() {
         toast.success(`Application moved to Trash`)
     }
 
+    const handleViewResume = async () => {
+        try {
+            let sourcePath = app.resume_text || ''
+            if (!sourcePath) {
+                const recoveredPath = await recoverResumeReference(app.id)
+                if (!recoveredPath) {
+                    toast.error('File reference missing. Please re-upload.')
+                    return
+                }
+                sourcePath = recoveredPath
+                setApp((prev) => (prev ? { ...prev, resume_text: recoveredPath } : prev))
+            }
+
+            const url = await getResumeUrl(sourcePath)
+            setSignedResumeUrl(url)
+            setShowPdfViewer(true)
+        } catch {
+            toast.error('Could not load resume. Please try re-uploading.')
+        }
+    }
+
     return (
         <div className="max-w-5xl mx-auto space-y-6 pb-20">
             {/* Header */}
-            <div className="sticky top-0 z-30 bg-white/95 dark:bg-[#020617]/95 backdrop-blur-md py-3 -mx-4 px-4 mb-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-800/50 md:relative md:top-auto md:bg-transparent md:p-0 md:m-0 md:mb-8 md:border-none">
+            <div className="sticky top-0 z-30 backdrop-blur-md py-3 -mx-4 px-4 mb-4 flex items-center justify-between border-b border-white/10 md:relative md:top-auto md:bg-transparent md:p-0 md:m-0 md:mb-8 md:border-none">
                 <button
                     onClick={() => navigate(-1)}
-                    className="flex items-center gap-1.5 px-4 py-2 md:px-5 md:py-2.5 rounded-full text-xs md:text-sm font-black uppercase tracking-wider bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:text-primary-500 transition-all shadow-sm"
+                    className="glass-button flex items-center gap-1.5 px-4 py-2 md:px-5 md:py-2.5 text-xs md:text-sm font-black uppercase tracking-wider text-glass-tertiary"
                 >
-                    <ChevronLeft size={16} /> Back
+                    <ChevronLeft size={16} strokeWidth={1.5} /> Back
                 </button>
                 <button
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="flex items-center gap-1.5 px-4 py-2 md:px-5 md:py-2.5 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest bg-rose-500/10 border border-rose-500/20 text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm"
+                    className="glass-button flex items-center gap-1.5 px-4 py-2 md:px-5 md:py-2.5 text-[9px] md:text-[10px] font-black uppercase tracking-widest border border-rose-400/40"
+                    style={{ background: 'var(--tint-rose)' }}
                 >
-                    <Trash2 size={16} /> <span className="hidden sm:inline">Delete Application</span><span className="sm:hidden">Delete</span>
+                    <Trash2 size={16} strokeWidth={1.5} className="text-white" />
+                    <span className="hidden sm:inline text-white dark:text-white">Delete Application</span>
+                    <span className="sm:hidden text-black dark:text-white">Delete</span>
                 </button>
             </div>
 
-            <ConfirmModal
-                open={showDeleteConfirm}
-                onClose={() => setShowDeleteConfirm(false)}
-                onConfirm={handleDelete}
-                title="Move to Trash?"
-                description="This application will be moved to your Trash bin. You can restore it later if needed."
-                confirmText="Move to Trash"
-            />
-
-            <div className="bg-white dark:bg-[#020617] rounded-[2.5rem] border border-gray-200 dark:border-gray-800/50 shadow-premium p-6 md:p-10 transition-colors">
+            <div className="glass-panel p-6 md:p-10">
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 md:gap-8 mb-8 md:mb-12">
                     <div className="flex flex-col items-center md:flex-row md:items-start text-center md:text-left gap-6 w-full">
-                        <div className="w-20 h-20 md:w-24 md:h-24 rounded-[2rem] bg-gray-100 dark:bg-gray-800/40 flex items-center justify-center text-4xl md:text-5xl shadow-inner border border-gray-200 dark:border-gray-800 transition-transform hover:scale-105 duration-500 shrink-0">🏢</div>
+                        <div className="w-20 h-20 md:w-24 md:h-24 flex items-center justify-center text-4xl md:text-5xl shadow-inner border border-white/10 transition-transform hover:scale-105 duration-500 shrink-0" style={{ borderRadius: 'var(--radius-xl)', backdropFilter: 'var(--glass-blur-xs)', background: 'var(--glass-fill-light)' }}>🏢</div>
                         <div className="min-w-0 w-full">
                             {isEditingCompany ? (
                                 <div className="flex flex-col gap-2 mb-2">
@@ -170,7 +228,7 @@ export default function ApplicationDetailPage() {
                                 </div>
                             ) : (
                                 <div className="flex items-center justify-center md:justify-start gap-2 group">
-                                    <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white tracking-tight leading-tight truncate">{app.company}</h1>
+                                    <h1 className="text-3xl md:text-4xl font-black text-glass-primary tracking-tight leading-tight truncate">{app.company}</h1>
                                     <button
                                         onClick={() => {
                                             setTempCompany(app.company)
@@ -214,7 +272,7 @@ export default function ApplicationDetailPage() {
                             ) : (
                                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 md:gap-3 mt-2">
                                     <div className="flex items-center gap-2 group">
-                                        <p className="text-base md:text-lg font-bold text-gray-500">{app.role}</p>
+                                        <p className="text-base md:text-lg font-bold text-glass-secondary">{app.role}</p>
                                         <button
                                             onClick={() => {
                                                 setTempRole(app.role)
@@ -314,51 +372,76 @@ export default function ApplicationDetailPage() {
 
                 </div>
 
-                {/* Status Switcher - Mobile-first: 2-row grid on mobile, single row on desktop */}
+                {/* Status Selector */}
                 <div className="mb-8 md:mb-10">
-                    <div className="flex items-center gap-2 mb-3">
-                        <div className="h-px flex-1 bg-gray-100 dark:bg-gray-800/50" />
-                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] whitespace-nowrap">Current Status</span>
-                        <div className="h-px flex-1 bg-gray-100 dark:bg-gray-800/50" />
-                    </div>
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
+                        <div className="flex items-center gap-2">
+                            <div className="h-px w-10 md:w-14 bg-gray-100 dark:bg-gray-800/50" />
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] whitespace-nowrap">Current Status</span>
+                        </div>
 
-                    <div className="p-1.5 bg-gray-50 dark:bg-gray-900/50 rounded-2xl md:rounded-3xl border border-gray-100 dark:border-gray-800/50 shadow-sm">
-                        <div className="grid grid-cols-3 md:flex md:items-center gap-1">
-                            {['Applied', 'OA', 'Interview', 'Offer', 'Rejected', 'Ghosted'].map((s) => {
-                                const isSel = currentStatus === s
-                                const isNegative = s === 'Rejected' || s === 'Ghosted'
-                                return (
-                                    <button
-                                        key={s}
-                                        onClick={() => handleUpdateStatus(s as any)}
-                                        className={`md:flex-1 px-3 md:px-6 py-2 md:py-2.5 rounded-xl md:rounded-2xl text-[10px] md:text-[11px] font-black uppercase tracking-wider md:tracking-widest transition-all duration-300 whitespace-nowrap text-center
-                                            ${isSel
-                                                ? isNegative
-                                                    ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20'
-                                                    : 'bg-primary-500 text-white shadow-lg shadow-primary-500/20'
-                                                : 'text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/5'}`}
-                                    >
-                                        {s}
-                                    </button>
-                                )
-                            })}
+                        <div ref={statusMenuRef} className="relative w-full md:w-auto md:min-w-[290px]">
+                            <button
+                                onClick={() => setShowStatusMenu(prev => !prev)}
+                                className="glass-button w-full flex items-center justify-between px-4 py-3 text-sm md:text-[15px] font-bold text-glass-primary"
+                            >
+                                <span>{statusSelectorValue}</span>
+                                <ChevronDown
+                                    size={16}
+                                    strokeWidth={1.8}
+                                    className={`text-glass-tertiary transition-transform ${showStatusMenu ? 'rotate-180' : ''}`}
+                                />
+                            </button>
+
+                            {showStatusMenu && (
+                                <div className="absolute right-0 mt-2 w-full rounded-2xl border border-white/15 shadow-2xl z-50 overflow-hidden" style={{ backdropFilter: 'var(--glass-blur-md)', background: 'var(--glass-fill-heavy)' }}>
+                                    {STATUS_OPTIONS.map((s) => {
+                                        const isSelected = statusSelectorValue === s
+                                        return (
+                                            <button
+                                                key={s}
+                                                onClick={() => {
+                                                    handleUpdateStatus(s)
+                                                    setShowStatusMenu(false)
+                                                }}
+                                                className={`w-full text-left px-4 py-2.5 text-sm font-semibold transition-colors
+                                                    ${isSelected ? 'bg-primary-500/20 text-primary-500 dark:text-primary-300' : 'text-glass-primary hover:bg-white/10'}`}
+                                            >
+                                                {s}
+                                            </button>
+                                        )
+                                    })}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
 
                 {/* Pipeline Stepper */}
                 {currentStageIndex === -1 ? (
-                    <div className="bg-white dark:bg-[#020617] rounded-[2rem] border border-gray-200 dark:border-white shadow-premium dark:shadow-[0_0_20px_rgba(255,255,255,0.3)] p-5 md:p-8 flex items-center justify-center text-center">
+                    <div className="glass-panel p-5 md:p-8 flex items-center justify-center text-center">
                         <div>
-                            <div className="w-12 h-12 md:w-20 md:h-20 rounded-full bg-rose-500/10 flex items-center justify-center text-2xl md:text-4xl mx-auto mb-4 md:mb-6 border border-rose-500/20 shadow-[0_0_30px_rgba(244,63,94,0.15)] animate-bounce-slow">💪</div>
-                            <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white mb-2 md:mb-3">{currentStatus === 'Ghosted' ? 'Silence Speaks Volumes' : 'Every "No" Brings You Closer to a "Yes"'}</h3>
-                            <p className="text-xs md:text-sm text-gray-400 max-w-lg mx-auto leading-relaxed">
+                            <div className="w-12 h-12 md:w-20 md:h-20 rounded-full bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-3xl md:text-5xl mx-auto mb-4 md:mb-6">
+                                {currentStatus === 'Ghosted' ? (
+                                    <Ghost size={28} strokeWidth={1.75} className="text-rose-400 md:w-10 md:h-10" />
+                                ) : (
+                                    <XCircle size={28} strokeWidth={1.75} className="text-rose-400 md:w-10 md:h-10" />
+                                )}
+                            </div>
+                            <h3 className="text-xl md:text-2xl font-black text-glass-primary mb-2 md:mb-3">
+                                {currentStatus === 'Ghosted' ? 'No Response Yet' : 'This Outcome Is Not Final'}
+                            </h3>
+                            <p className="text-xs md:text-sm text-glass-secondary max-w-lg mx-auto leading-relaxed">
                                 {currentStatus === 'Ghosted'
-                                    ? 'No response is still a response. Their silence reflects their process, not your value. Move forward—better opportunities with respectful teams await.'
-                                    : 'Resilience is the most important skill in your career. Don\'t let this outcome define your journey. Take a breath, dust yourself off, and crack the next one! You\'ve got this.'}
+                                    ? 'No reply is frustrating, but it does not reduce your value. Close this loop, keep momentum, and focus on better opportunities.'
+                                    : 'Rejection is part of the process. Capture what you learned, refine your approach, and move to the next opportunity with confidence.'}
                             </p>
-                            <button onClick={() => navigate('/applications')} className="mt-6 md:mt-8 px-6 md:px-8 py-2.5 md:py-3 rounded-full bg-gradient-to-r from-rose-500 to-rose-600 text-white text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] hover:scale-105 hover:shadow-lg hover:shadow-rose-500/20 transition-all duration-300">
-                                Find Next Opportunity
+                            <button
+                                onClick={() => navigate('/applications')}
+                                className="glass-button mt-6 md:mt-8 px-6 md:px-8 py-2.5 md:py-3 text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-white"
+                                style={{ background: 'var(--tint-rose)' }}
+                            >
+                                Explore Next Applications
                             </button>
                         </div>
                     </div>
@@ -370,6 +453,13 @@ export default function ApplicationDetailPage() {
                             <p className="text-xs md:text-sm text-indigo-50 max-w-lg mx-auto leading-relaxed">
                                 Great start! Keep the momentum going. Track your progress and prepare for the next steps.
                             </p>
+                            <button
+                                onClick={() => navigate('/applications')}
+                                className="glass-button mt-6 md:mt-8 px-6 md:px-8 py-2.5 md:py-3 text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-white"
+                                style={{ background: 'var(--tint-blue)' }}
+                            >
+                                Explore Next Applications
+                            </button>
                         </div>
                     </div>
                 ) : currentStatus === 'OA' ? (
@@ -380,16 +470,32 @@ export default function ApplicationDetailPage() {
                             <p className="text-xs md:text-sm text-amber-50 max-w-lg mx-auto leading-relaxed">
                                 Practice makes perfect. Review key concepts, manage your time wisely, and show them what you can do!
                             </p>
+                            <button
+                                onClick={() => navigate('/applications')}
+                                className="glass-button mt-6 md:mt-8 px-6 md:px-8 py-2.5 md:py-3 text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-white"
+                                style={{ background: 'var(--tint-blue)' }}
+                            >
+                                Explore Next Applications
+                            </button>
                         </div>
                     </div>
-                ) : currentStatus === 'Interview' ? (
+                ) : currentStatus === 'Technical Interview' || currentStatus === 'HR Interview' || currentStatus === 'Interview' ? (
                     <div className="bg-gradient-to-r from-blue-500 to-primary-600 rounded-[2rem] border-2 border-blue-400 shadow-premium p-5 md:p-8 flex items-center justify-center text-center">
                         <div>
                             <div className="w-12 h-12 md:w-20 md:h-20 rounded-full bg-white/20 flex items-center justify-center text-3xl md:text-5xl mx-auto mb-4 md:mb-6 border-2 border-white/40">🎯</div>
-                            <h3 className="text-xl md:text-2xl font-black text-white mb-2 md:mb-3">Interview Scheduled!</h3>
+                            <h3 className="text-xl md:text-2xl font-black text-white mb-2 md:mb-3">
+                                {currentStatus === 'HR Interview' ? 'HR Interview Scheduled!' : 'Technical Interview Scheduled!'}
+                            </h3>
                             <p className="text-xs md:text-sm text-blue-50 max-w-lg mx-auto leading-relaxed">
                                 Research the company, practice STAR responses, and prepare thoughtful questions. You've got this!
                             </p>
+                            <button
+                                onClick={() => navigate('/applications')}
+                                className="glass-button mt-6 md:mt-8 px-6 md:px-8 py-2.5 md:py-3 text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-white"
+                                style={{ background: 'var(--tint-blue)' }}
+                            >
+                                Explore Next Applications
+                            </button>
                         </div>
                     </div>
                 ) : currentStatus === 'Offer' ? (
@@ -459,6 +565,13 @@ export default function ApplicationDetailPage() {
                                 <p className="text-xs md:text-sm text-emerald-50 max-w-lg mx-auto leading-relaxed">
                                     Your hard work paid off! Review the offer carefully, negotiate if needed, and celebrate this achievement!
                                 </p>
+                                <button
+                                    onClick={() => navigate('/applications')}
+                                    className="glass-button mt-6 md:mt-8 px-6 md:px-8 py-2.5 md:py-3 text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-white"
+                                    style={{ background: 'var(--tint-blue)' }}
+                                >
+                                    Explore Next Applications
+                                </button>
                             </div>
                         </div>
                     </>
@@ -497,10 +610,11 @@ export default function ApplicationDetailPage() {
                                     // Make Offer step green if it is the current step (meaning 100% complete)
                                     const isCompletedOffer = s === 'Offer' && isCurr;
 
-                                    const config: Record<string, { icon: any }> = {
+                                    const config: Record<(typeof STAGES)[number], { icon: LucideIcon }> = {
                                         'Applied': { icon: FileEdit },
                                         'OA': { icon: Laptop },
-                                        'Interview': { icon: Calendar },
+                                        'Technical Interview': { icon: Calendar },
+                                        'HR Interview': { icon: Users },
                                         'Offer': { icon: isCompletedOffer ? Check : Sparkles },
                                     }
                                     const Icon = config[s].icon
@@ -592,9 +706,9 @@ export default function ApplicationDetailPage() {
                                     placeholder="Paste job description here..."
                                 />
                             ) : (
-                                <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-5 text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap font-mono min-h-[200px] border border-gray-200 dark:border-gray-800 transition-colors break-words overflow-hidden">
+                            <div className="glass-input p-5 text-sm text-glass-primary leading-relaxed whitespace-pre-wrap font-mono min-h-[200px] break-words overflow-hidden">
                                     {app.jd_text ? app.jd_text : (
-                                        <span className="text-gray-400 italic">No job description added yet. Click Edit to add one.</span>
+                                        <span className="text-glass-tertiary italic">No job description added yet. Click Edit to add one.</span>
                                     )}
                                 </div>
                             )}
@@ -610,7 +724,7 @@ export default function ApplicationDetailPage() {
                                     <Globe size={14} /> Application URL
                                 </h3>
                             </div>
-                            <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-5 border border-gray-200 dark:border-gray-800 transition-colors">
+                            <div className="glass-panel p-5">
                                 {isEditingUrl ? (
                                     <div className="flex flex-col gap-3">
                                         <input
@@ -618,12 +732,12 @@ export default function ApplicationDetailPage() {
                                             value={tempUrl}
                                             onChange={e => setTempUrl(e.target.value)}
                                             placeholder="https://..."
-                                            className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all dark:text-white"
+                                            className="glass-input w-full px-4 py-2 text-sm text-glass-primary"
                                         />
                                         <div className="flex items-center justify-end gap-2">
                                             <button
                                                 onClick={() => setIsEditingUrl(false)}
-                                                className="px-4 py-1.5 rounded-full text-xs font-bold text-gray-400 hover:text-white transition-colors"
+                                                className="glass-button px-4 py-1.5 text-xs font-bold text-glass-tertiary"
                                             >
                                                 Cancel
                                             </button>
@@ -632,7 +746,8 @@ export default function ApplicationDetailPage() {
                                                     updateApplication(app.id, { application_url: tempUrl.trim() || undefined })
                                                     setIsEditingUrl(false)
                                                 }}
-                                                className="px-4 py-1.5 rounded-full bg-primary-500 text-white text-xs font-bold hover:bg-primary-600 transition-colors"
+                                                className="glass-button px-4 py-1.5 text-xs font-bold text-white"
+                                                style={{ background: 'var(--tint-blue)' }}
                                             >
                                                 Save
                                             </button>
@@ -684,8 +799,11 @@ export default function ApplicationDetailPage() {
                         <section>
                             <div className="flex items-center justify-between mb-4">
                                 <div>
-                                    <h3 className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                        <FileText size={14} /> Tailored Resume
+                                    <h3 className="flex items-center gap-2 text-xs font-bold text-glass-secondary uppercase tracking-wider">
+                                        <span className="w-5 h-5 flex items-center justify-center bg-rose-500 dark:bg-rose-300 text-white dark:text-rose-950 shrink-0 rounded-md">
+                                            <FileText size={12} strokeWidth={1.9} />
+                                        </span>
+                                        Tailored Resume
                                     </h3>
                                     <p className="text-[10px] text-gray-500 mt-0.5 font-medium ml-5">Max file size: 5MB (.pdf)</p>
                                 </div>
@@ -718,7 +836,7 @@ export default function ApplicationDetailPage() {
                                                 try {
                                                     await uploadResume(app.id, file)
                                                     toast.success(`Uploaded: ${file.name}`)
-                                                } catch (error) {
+                                                } catch {
                                                     toast.error('Failed to upload file')
                                                 } finally {
                                                     setIsUploading(false)
@@ -728,45 +846,32 @@ export default function ApplicationDetailPage() {
                                     />
                                 </label>
                             </div>
-                            <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-5 border border-gray-200 dark:border-gray-800 transition-colors">
+                            <div className="glass-panel p-5">
                                 {app.resume_file_name ? (
                                     <div className="flex flex-col gap-3">
-                                        <div className="flex items-center gap-3 p-3 bg-gray-100 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm group/resume">
-                                            <div className="w-10 h-10 rounded-lg bg-rose-100 dark:bg-rose-900/20 flex items-center justify-center text-rose-500 shrink-0">
-                                                <FileText size={20} />
+                                        <div className="flex items-center gap-3 p-3 rounded-xl border border-white/10 shadow-sm group/resume" style={{ backdropFilter: 'var(--glass-blur-xs)', background: 'var(--glass-fill-light)' }}>
+                                            <div className="w-10 h-10 flex items-center justify-center bg-rose-500 dark:bg-rose-300 text-white dark:text-rose-950 shrink-0" style={{ borderRadius: 'var(--radius-md)' }}>
+                                                <FileText size={20} strokeWidth={1.9} />
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{app.resume_file_name}</p>
+                                                <p className="text-sm font-semibold text-glass-primary truncate">{app.resume_file_name}</p>
                                                 <p className="text-[11px] text-gray-400 uppercase font-bold tracking-tighter">Uploaded Resume</p>
                                             </div>
                                             <button
                                                 onClick={() => setShowResumeConfirm(true)}
-                                                className="p-2 rounded-lg text-gray-500 hover:text-rose-500 hover:bg-rose-500/10 transition-all md:opacity-0 md:group-hover/resume:opacity-100 shrink-0"
+                                                className="glass-button p-2 text-glass-tertiary hover:text-rose-400 md:opacity-0 md:group-hover/resume:opacity-100 shrink-0"
                                                 title="Remove Resume"
                                             >
-                                                <Trash2 size={16} />
+                                                <Trash2 size={16} strokeWidth={1.5} />
                                             </button>
                                         </div>
 
-                                        {app.resume_text && (
-                                            <button
-                                                onClick={async () => {
-                                                    try {
-                                                        const url = await getResumeUrl(app.resume_text || '')
-                                                        setSignedResumeUrl(url)
-                                                        setShowPdfViewer(true)
-                                                    } catch {
-                                                        toast.error('Could not load resume. Please try re-uploading.')
-                                                    }
-                                                }}
-                                                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-bold text-gray-700 dark:text-white transition-colors mt-2"
-                                            >
-                                                <FileText size={16} /> View Resume
-                                            </button>
-                                        )}
-                                        {app.resume_file_name && !app.resume_text && (
-                                            <p className="text-xs text-orange-400 italic mt-2">⚠️ File reference missing. Please re-upload.</p>
-                                        )}
+                                        <button
+                                            onClick={handleViewResume}
+                                            className="glass-button w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold text-glass-primary mt-2"
+                                        >
+                                            <FileText size={16} strokeWidth={1.5} /> View Resume
+                                        </button>
                                     </div>
                                 ) : (
                                     <p className="text-xs text-gray-400 italic">No file uploaded yet. Upload the tailored resume PDF used for this role.</p>
@@ -781,10 +886,10 @@ export default function ApplicationDetailPage() {
                                     <Tag size={14} /> Skill Gaps to Close
                                 </h3>
                             </div>
-                            <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 transition-colors">
+                            <div className="glass-panel p-5">
                                 <div className="flex flex-wrap gap-2">
                                     {app.skill_gaps.map((skill: string, i: number) => (
-                                        <span key={i} className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded-lg text-xs font-bold group border border-orange-100 dark:border-orange-800/50">
+                                        <span key={i} className="glass-badge flex items-center gap-1.5 px-3 py-1.5 text-orange-400 text-xs font-bold group" style={{ background: 'var(--tint-amber)' }}>
                                             {skill}
                                             <button onClick={() => updateApplication(app.id, { skill_gaps: app.skill_gaps.filter((s: string) => s !== skill) })} className="hover:text-orange-800 dark:hover:text-orange-200 transition-colors opacity-50 hover:opacity-100">
                                                 <X size={12} />
@@ -802,7 +907,7 @@ export default function ApplicationDetailPage() {
                                 <CalendarCheck size={14} /> Interview Notes
                             </h3>
                             <textarea
-                                className="w-full p-5 bg-gray-50 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800 rounded-2xl text-sm text-gray-700 dark:text-gray-300 outline-none focus:ring-2 focus:ring-primary-500/10 focus:border-primary-500 transition-all min-h-[150px] resize-none"
+                                className="glass-input w-full p-5 text-sm text-glass-primary min-h-[150px] resize-none"
                                 placeholder="Add recruiter info, questions asked, or impressions..."
                                 value={localNotes}
                                 onChange={(e) => handleNotesChange(e.target.value)}
@@ -839,26 +944,26 @@ export default function ApplicationDetailPage() {
 
             {/* PDF Viewer Modal */}
             {showPdfViewer && app.resume_text && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-                    <div className="w-full max-w-5xl h-[90vh] bg-gray-900 rounded-3xl shadow-2xl border border-gray-800 flex flex-col overflow-hidden">
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800 bg-gray-900 shrink-0">
+                <div className="glass-modal-overlay fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
+                    <div className="glass-modal w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden">
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 shrink-0">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-rose-900/20 flex items-center justify-center text-rose-500">
+                                <div className="w-10 h-10 flex items-center justify-center text-rose-500" style={{ borderRadius: 'var(--radius-md)', background: 'var(--tint-rose)' }}>
                                     <FileText size={20} />
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <h2 className="text-sm sm:text-lg font-bold text-white truncate">{app.resume_file_name}</h2>
-                                    <p className="text-[10px] sm:text-xs text-gray-400 truncate">Tailored Resume for {app.company}</p>
+                                    <h2 className="text-sm sm:text-lg font-bold text-glass-primary truncate">{app.resume_file_name}</h2>
+                                    <p className="text-[10px] sm:text-xs text-glass-tertiary truncate">Tailored Resume for {app.company}</p>
                                 </div>
                             </div>
                             <button
                                 onClick={() => setShowPdfViewer(false)}
-                                className="p-2 rounded-full hover:bg-gray-800 text-gray-400 hover:text-white transition-colors"
+                                className="p-2 rounded-lg border border-rose-400/30 text-rose-400 hover:text-rose-500 hover:border-rose-500/50 transition-colors"
                             >
                                 <X size={20} />
                             </button>
                         </div>
-                        <div className="flex-1 bg-gray-950 p-4">
+                        <div className="flex-1 p-4" style={{ background: 'rgba(0,0,0,0.3)' }}>
                             {signedResumeUrl ? (
                                 <iframe
                                     src={signedResumeUrl}
@@ -881,19 +986,19 @@ export default function ApplicationDetailPage() {
 function AddSkillInput({ onAdd }: { onAdd: (skill: string) => void }) {
     const [val, setVal] = useState('')
     return (
-        <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800/60 rounded-lg pr-2 border border-transparent focus-within:border-gray-200 dark:focus-within:border-gray-700 focus-within:bg-white dark:focus-within:bg-gray-800 transition-all">
+        <div className="glass-input flex items-center gap-2 pr-2">
             <input
-                className="bg-transparent border-none outline-none px-3 py-1.5 text-xs w-28 text-gray-700 dark:text-gray-300"
+                className="bg-transparent border-none outline-none px-3 py-1.5 text-xs w-28 text-glass-primary"
                 placeholder="Add skill..."
                 value={val}
                 onChange={e => setVal(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter' && val.trim()) { onAdd(val.trim()); setVal('') } }}
             />
-            <button onClick={() => { if (val.trim()) { onAdd(val.trim()); setVal('') } }} className="text-gray-400 hover:text-primary-500">
-                <Plus size={14} />
+            <button onClick={() => { if (val.trim()) { onAdd(val.trim()); setVal('') } }} className="text-glass-tertiary hover:text-primary-400">
+                <Plus size={14} strokeWidth={1.5} />
             </button>
         </div>
     )
 }
 
-function X({ size }: { size: number }) { return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg> }
+function X({ size }: { size: number }) { return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg> }

@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { LogOut, Trash2, AlertTriangle } from 'lucide-react'
 import { useAuthStore } from '../store/useAuthStore'
-import { supabase } from '../lib/supabase'
 import ConfirmModal from '../components/ConfirmModal'
 import toast from 'react-hot-toast'
+import { deleteAccount } from '../services/authService'
+import { handleError } from '../lib/errors'
 
 export default function ProfilePage() {
     const { user, signOut } = useAuthStore()
@@ -13,42 +14,10 @@ export default function ProfilePage() {
     const handleDeleteAccount = async () => {
         setIsDeleting(true)
         try {
-            // 1. Get all applications with resume files
-            const { data: apps } = await supabase
-                .from('applications')
-                .select('resume_text')
-                .eq('user_id', user?.id)
-                .not('resume_text', 'is', null)
-
-            // 2. Delete all resume files from storage
-            if (apps && apps.length > 0) {
-                const filesToDelete = apps.map(app => app.resume_text).filter(Boolean)
-                if (filesToDelete.length > 0) {
-                    await supabase.storage.from('resumes').remove(filesToDelete)
-                }
-            }
-
-            // 3. Delete all applications
-            const { error: dataError } = await supabase
-                .from('applications')
-                .delete()
-                .eq('user_id', user?.id)
-
-            if (dataError) throw dataError
-
-            // 4. Call RPC to delete auth user
-            const { error: rpcError } = await supabase.rpc('delete_user')
-
-            if (rpcError) {
-                console.error("RPC Error:", rpcError)
-                throw new Error("Could not delete account. Please contact support.")
-            }
-
-            // 5. Clear session
-            await signOut()
+            await deleteAccount()
             toast.success('Account deleted successfully')
-        } catch (error: any) {
-            toast.error(error.message || 'Failed to delete account')
+        } catch (error) {
+            handleError(error)
         } finally {
             setIsDeleting(false)
             setShowDeleteConfirm(false)

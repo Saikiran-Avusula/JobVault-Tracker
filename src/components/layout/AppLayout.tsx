@@ -1,15 +1,26 @@
+import { useEffect } from 'react'
 import { Outlet, Navigate } from 'react-router-dom'
 import SideNavigation from './SideNavigation'
 import TopBar from './TopBar'
 import BottomNavigation from './BottomNavigation'
 import { HardDrive } from 'lucide-react'
 import { useAuthStore } from '../../store/useAuthStore'
+import { useJobStore } from '../../store/useJobStore'
 import '../../store/useThemeStore' // Import to activate theme subscription
 import { Toaster } from 'react-hot-toast'
 import ErrorBoundary from '../ErrorBoundary'
 
 export default function AppLayout() {
     const { user, loading } = useAuthStore()
+    const { fetchApplications } = useJobStore()
+    const userId = user?.id
+
+    useEffect(() => {
+        if (!userId) return
+        fetchApplications().catch(() => {
+            // Keep layout stable; route-level pages handle data errors.
+        })
+    }, [userId, fetchApplications])
 
     if (loading) {
         return (
@@ -28,7 +39,7 @@ export default function AppLayout() {
 
     return (
         <ErrorBoundary>
-            <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-[#020617] transition-all duration-500">
+            <div className="app-shell flex h-screen overflow-hidden transition-all duration-500">
                 {/* Desktop SideNav */}
                 <div className="hidden md:flex relative">
                     <SideNavigation />
@@ -36,8 +47,8 @@ export default function AppLayout() {
 
                 <div className="flex flex-col flex-1 min-w-0 overflow-hidden text-gray-100">
                     <TopBar />
-                    <main className="flex-1 overflow-y-auto px-4 pt-0 pb-24 md:p-10 md:pb-10">
-                        <div className="max-w-7xl mx-auto">
+                    <main className="flex-1 overflow-y-auto px-3 pt-0 pb-24 md:px-8 md:pb-10">
+                        <div className="content-shell">
                             <Outlet />
                         </div>
                     </main>

@@ -1,22 +1,22 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, X, Sun, Moon, Menu, User, LogOut, ChevronRight } from 'lucide-react'
+import { Search, X, Sun, Moon, Menu, User, LogOut, FolderOpen, Trash2, Plus, Bug } from 'lucide-react'
 import { useAuthStore } from '../../store/useAuthStore'
 import { useJobStore } from '../../store/useJobStore'
 import { useThemeStore } from '../../store/useThemeStore'
+import NewJobModal from '../NewJobModal'
 
 export default function TopBar() {
     const [query, setQuery] = useState('')
     const [focused, setFocused] = useState(false)
     const [menuOpen, setMenuOpen] = useState(false)
+    const [showNewJobModal, setShowNewJobModal] = useState(false)
+    const [touchStart, setTouchStart] = useState(0)
     const inputRef = useRef<HTMLInputElement>(null)
     const navigate = useNavigate()
     const { setSearchQuery } = useJobStore()
     const { user, signOut } = useAuthStore()
     const { theme, toggleTheme } = useThemeStore()
-
-    // Close menu on route change
-    useEffect(() => { setMenuOpen(false) }, [])
 
     useEffect(() => {
         const handler = (e: KeyboardEvent) => {
@@ -48,34 +48,44 @@ export default function TopBar() {
         navigate('/login')
     }
 
+    const handleTouchStart = (e: React.TouchEvent) => {
+        setTouchStart(e.touches[0].clientX)
+    }
+
+    const handleTouchEnd = (e: React.TouchEvent) => {
+        const touchEnd = e.changedTouches[0].clientX
+        if (touchStart - touchEnd > 50) {
+            setMenuOpen(false)
+        }
+    }
+
     const userInitials = user?.user_metadata?.full_name
         ? user.user_metadata.full_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
         : user?.email?.[0].toUpperCase() || 'U'
 
     return (
         <>
-            <header className="h-16 md:h-20 bg-white/80 dark:bg-[#020617]/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800/50 flex items-center justify-between px-4 md:px-8 shrink-0 transition-all z-40 sticky top-0 gap-3">
+            <header className="h-16 md:h-20 backdrop-blur-md border-b border-white/10 flex items-center justify-between px-4 md:px-8 shrink-0 z-40 sticky top-0 gap-3" style={{ background: 'var(--glass-fill-light)' }}>
                 {/* Hamburger — mobile only */}
                 <button
                     onClick={() => setMenuOpen(true)}
-                    className="md:hidden p-2 -ml-1 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0"
+                    className="glass-button md:hidden p-2 -ml-1 text-glass-tertiary shrink-0"
                 >
-                    <Menu size={22} />
+                    <Menu size={22} strokeWidth={1.5} />
                 </button>
 
                 {/* Search Container */}
                 <div className="flex-1 max-w-2xl">
                     <div className={`relative flex items-center transition-all duration-300 group
                         ${focused ? 'scale-[1.02] md:scale-100' : ''}`}>
-                        <div className={`absolute inset-0 rounded-full transition-all duration-300 
-                            ${focused
-                                ? 'bg-gray-100 dark:bg-gray-800 shadow-float ring-1 ring-primary-500/20'
-                                : 'bg-gray-100/60 dark:bg-gray-800/40'}`} />
+                        <div className={`glass-input absolute inset-0 transition-all duration-300 
+                            ${focused ? 'ring-2 ring-primary-500/30' : ''}`} />
 
                         <Search
                             size={18}
+                            strokeWidth={1.5}
                             className={`relative ml-4 transition-colors duration-300 
-                                ${focused ? 'text-primary-500' : 'text-gray-500'}`}
+                                ${focused ? 'text-primary-400' : 'text-glass-tertiary'}`}
                         />
 
                         <input
@@ -86,15 +96,15 @@ export default function TopBar() {
                             onFocus={() => setFocused(true)}
                             onBlur={() => setFocused(false)}
                             placeholder="Search applications..."
-                            className="relative flex-1 py-3 px-3 bg-transparent text-sm font-medium text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 border-none outline-none focus:ring-0"
+                            className="relative flex-1 py-3 px-3 bg-transparent text-sm font-medium text-glass-primary placeholder-gray-400 border-none outline-none focus:ring-0"
                         />
 
                         {query && (
                             <button
                                 onClick={clearSearch}
-                                className="relative mr-3 p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors"
+                                className="relative mr-3 p-1 rounded-lg border border-rose-400/30 text-rose-400 hover:text-rose-500 hover:border-rose-500/50 transition-colors"
                             >
-                                <X size={14} />
+                                <X size={14} strokeWidth={1.5} />
                             </button>
                         )}
                     </div>
@@ -102,17 +112,18 @@ export default function TopBar() {
 
                 {/* Desktop-only actions */}
                 <div className="hidden md:flex items-center gap-3 ml-4">
-                    <div className="h-8 w-px bg-gray-200 dark:bg-gray-800" />
+                    <div className="h-8 w-px" style={{ background: 'var(--glass-fill-medium)' }} />
                     <button
                         onClick={toggleTheme}
-                        className="p-2.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition-colors"
+                        className="glass-button p-2.5 text-glass-tertiary"
                         title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                     >
-                        {theme === 'dark' ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} className="text-indigo-500" />}
+                        {theme === 'dark' ? <Sun size={18} strokeWidth={1.5} className="text-amber-400" /> : <Moon size={18} strokeWidth={1.5} className="text-indigo-500" />}
                     </button>
                     <button
                         onClick={() => navigate('/profile')}
-                        className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary-500 to-primary-600 flex items-center justify-center text-white font-black text-sm shadow-lg shadow-primary-500/20 hover:scale-105 transition-transform shrink-0"
+                        className="w-10 h-10 flex items-center justify-center text-white font-black text-sm shadow-lg shrink-0"
+                        style={{ borderRadius: 'var(--radius-pill)', background: 'var(--tint-blue)' }}
                     >
                         {userInitials}
                     </button>
@@ -122,64 +133,111 @@ export default function TopBar() {
             {/* Mobile Drawer Overlay */}
             {menuOpen && (
                 <div
-                    className="md:hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200"
+                    className="glass-modal-overlay md:hidden fixed inset-0 z-50 animate-in fade-in duration-200"
                     onClick={() => setMenuOpen(false)}
                 >
                     {/* Drawer Panel */}
                     <div
-                        className="absolute top-0 left-0 h-full w-72 bg-white dark:bg-[#0c0c14] border-r border-gray-200 dark:border-gray-800 shadow-2xl flex flex-col animate-in slide-in-from-left duration-300"
+                        className="glass-modal absolute top-0 left-0 h-full w-72 flex flex-col animate-in slide-in-from-left duration-300 overflow-hidden"
                         onClick={e => e.stopPropagation()}
+                        onTouchStart={handleTouchStart}
+                        onTouchEnd={handleTouchEnd}
                     >
                         {/* User Header */}
-                        <div className="p-6 border-b border-gray-100 dark:border-gray-800">
+                        <div className="p-4 border-b border-white/10 shrink-0">
+                            <div className="flex items-center justify-between mb-3">
+                                <h3 className="text-xs font-bold text-glass-tertiary uppercase tracking-wider">Menu</h3>
+                                <button
+                                    onClick={() => setMenuOpen(false)}
+                                    className="p-1.5 rounded-lg border border-rose-400/30 text-rose-400 hover:text-rose-500 hover:border-rose-500/50 transition-colors"
+                                >
+                                    <X size={18} strokeWidth={1.5} />
+                                </button>
+                            </div>
                             <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-primary-500 to-primary-600 flex items-center justify-center text-white font-black text-base shadow-lg shadow-primary-500/20">
+                                <div className="w-10 h-10 flex items-center justify-center text-white font-black text-sm shadow-lg" style={{ borderRadius: 'var(--radius-lg)', background: 'var(--tint-blue)' }}>
                                     {userInitials}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-bold text-gray-900 dark:text-white truncate">
+                                    <p className="text-sm font-bold text-glass-primary truncate">
                                         {user?.user_metadata?.full_name || 'User'}
                                     </p>
-                                    <p className="text-[11px] text-gray-400 truncate">{user?.email}</p>
+                                    <p className="text-[10px] text-glass-tertiary truncate">{user?.email}</p>
                                 </div>
                             </div>
                         </div>
 
                         {/* Menu Items */}
-                        <nav className="flex-1 p-3 space-y-1">
+                        <nav className="flex-1 p-3 space-y-2 overflow-y-auto">
+                            <button
+                                onClick={() => { navigate('/applications'); setMenuOpen(false) }}
+                                className="glass-button w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-glass-primary"
+                            >
+                                <FolderOpen size={20} strokeWidth={1.5} className="text-primary-400" />
+                                Applications
+                            </button>
+
+                            <button
+                                onClick={() => { setShowNewJobModal(true); setMenuOpen(false) }}
+                                className="glass-button w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-white"
+                                style={{ background: 'var(--tint-blue)' }}
+                            >
+                                <Plus size={20} strokeWidth={1.5} />
+                                Add Application
+                            </button>
+
+                            <button
+                                onClick={() => { navigate('/trash'); setMenuOpen(false) }}
+                                className="glass-button w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-glass-primary"
+                            >
+                                <Trash2 size={20} strokeWidth={1.5} className="text-rose-400" />
+                                Trash
+                            </button>
+
+                            <div className="h-px bg-white/10 my-3" />
+
                             <button
                                 onClick={() => { navigate('/profile'); setMenuOpen(false) }}
-                                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800/60 transition-colors"
+                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-glass-primary hover:bg-white/5 transition-colors"
                             >
-                                <User size={18} className="text-gray-400" />
+                                <User size={18} strokeWidth={1.5} className="text-glass-tertiary" />
                                 Profile Settings
-                                <ChevronRight size={14} className="ml-auto text-gray-300" />
+                            </button>
+
+                            <button
+                                onClick={() => { navigate('/report-issue'); setMenuOpen(false) }}
+                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-rose-600 dark:text-rose-300 hover:bg-rose-500/10 transition-colors"
+                            >
+                                <Bug size={18} strokeWidth={1.5} className="text-rose-600 dark:text-rose-300" />
+                                Report Issue
                             </button>
 
                             <button
                                 onClick={() => { toggleTheme(); setMenuOpen(false) }}
-                                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800/60 transition-colors"
+                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-glass-primary hover:bg-white/5 transition-colors"
                             >
                                 {theme === 'dark'
-                                    ? <Sun size={18} className="text-amber-400" />
-                                    : <Moon size={18} className="text-indigo-500" />}
+                                    ? <Sun size={18} strokeWidth={1.5} className="text-amber-400" />
+                                    : <Moon size={18} strokeWidth={1.5} className="text-indigo-500" />}
                                 {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
                             </button>
                         </nav>
 
                         {/* Footer */}
-                        <div className="p-3 border-t border-gray-100 dark:border-gray-800">
+                        <div className="p-3 border-t border-white/10 shrink-0">
                             <button
                                 onClick={handleLogout}
-                                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
+                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-rose-400 hover:bg-rose-500/10 transition-colors"
                             >
-                                <LogOut size={18} />
+                                <LogOut size={18} strokeWidth={1.5} />
                                 Sign Out
                             </button>
                         </div>
                     </div>
                 </div>
             )}
+
+            <NewJobModal open={showNewJobModal} onClose={() => setShowNewJobModal(false)} />
         </>
     )
 }

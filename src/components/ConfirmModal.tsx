@@ -22,21 +22,21 @@ export default function ConfirmModal({
     if (!open) return null
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-[#0c1020] w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl border border-gray-200 dark:border-white/5 animate-in zoom-in-95 duration-200">
-                <div className={`w-20 h-20 ${type === 'danger' ? 'bg-rose-500/10 text-rose-500' : 'bg-amber-500/10 text-amber-500'} rounded-3xl flex items-center justify-center mb-6 mx-auto border border-gray-200 dark:border-white/5`}>
+        <div className="glass-modal-overlay fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
+            <div className="glass-modal w-full max-w-md p-8 animate-in zoom-in-95 duration-200" style={{ animationTimingFunction: 'var(--ease-spring)' }}>
+                <div className={`w-20 h-20 ${type === 'danger' ? 'text-rose-500' : 'text-amber-500'} flex items-center justify-center mb-6 mx-auto`} style={{ borderRadius: 'var(--radius-xl)' }}>
                     {type === 'danger' ? <Trash2 size={36} /> : <AlertCircle size={36} />}
                 </div>
 
-                <h3 className="text-2xl font-black text-gray-900 dark:text-white text-center mb-2 tracking-tight">{title}</h3>
-                <p className="text-gray-500 font-medium text-center text-sm mb-8 px-4 leading-relaxed">
+                <h3 className="text-2xl font-black text-glass-primary text-center mb-2 tracking-tight">{title}</h3>
+                <p className="text-glass-secondary font-medium text-center text-sm mb-8 px-4 leading-relaxed">
                     {description}
                 </p>
 
                 <div className="flex gap-4">
                     <button
                         onClick={onClose}
-                        className="flex-1 px-6 py-3 rounded-full text-xs font-black text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-all uppercase tracking-widest"
+                        className="glass-button flex-1 px-6 py-3 text-xs font-black text-glass-secondary uppercase tracking-widest"
                     >
                         Cancel
                     </button>
@@ -45,7 +45,8 @@ export default function ConfirmModal({
                             onConfirm()
                             onClose()
                         }}
-                        className={`flex-1 px-6 py-3 rounded-full text-xs font-black text-white ${type === 'danger' ? 'bg-rose-500 hover:bg-rose-600 shadow-rose-500/20' : 'bg-primary-500 hover:bg-primary-600 shadow-primary-500/20'} shadow-xl transition-all uppercase tracking-widest`}
+                        className={`glass-button flex-1 px-6 py-3 text-xs font-black text-white uppercase tracking-widest ${type === 'danger' ? 'bg-rose-500/80' : 'bg-primary-500/80'}`}
+                        style={{ background: type === 'danger' ? 'var(--tint-rose)' : 'var(--tint-blue)' }}
                     >
                         {confirmText}
                     </button>

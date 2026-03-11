@@ -1,6 +1,6 @@
--- Add location column to job_applications table
-ALTER TABLE job_applications 
+-- Add location column to applications table
+ALTER TABLE applications
 ADD COLUMN IF NOT EXISTS location TEXT;
 
 -- Add comment to the column
-COMMENT ON COLUMN job_applications.location IS 'Job location (e.g., San Francisco, CA or Remote)';
+COMMENT ON COLUMN applications.location IS 'Job location (e.g., San Francisco, CA or Remote)';

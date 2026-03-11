@@ -6,21 +6,21 @@ interface JobState {
     applications: JobApplication[]
     loading: boolean
     searchQuery: string
-    statusFilter: JobStatus | 'All'
+    statusFilter: JobStatus | 'All' | 'Interviews'
     currentPage: number
     totalPages: number
     totalCount: number
 
     fetchApplications: (page?: number) => Promise<void>
     addApplication: (app: Parameters<typeof appService.createApplication>[0]) => Promise<JobApplication>
-    updateApplication: (id: string, updates: Partial<JobApplication>) => Promise<void>
+    updateApplication: (id: string, updates: Parameters<typeof appService.updateApplication>[1]) => Promise<void>
     moveToTrash: (id: string, isTrash: boolean) => Promise<void>
     restoreFromTrash: (id: string) => Promise<void>
     purgeFromTrash: (id: string) => Promise<void>
     uploadResume: (id: string, file: File) => Promise<string | null>
     removeResume: (id: string, resumeUrl?: string) => Promise<void>
     setSearchQuery: (q: string) => void
-    setStatusFilter: (filter: JobStatus | 'All') => void
+    setStatusFilter: (filter: JobStatus | 'All' | 'Interviews') => void
     setPage: (page: number) => void
 }
 
@@ -39,9 +39,9 @@ export const useJobStore = create<JobState>()((set, get) => ({
             const { data, total } = await appService.fetchApplications(page, 20)
             const totalPages = Math.ceil(total / 20)
             set({ applications: data, loading: false, currentPage: page, totalPages, totalCount: total })
-        } catch {
+        } catch (error) {
             set({ loading: false })
-            throw undefined
+            throw error
         }
     },
 

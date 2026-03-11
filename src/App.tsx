@@ -5,6 +5,7 @@ import ApplicationDetailPage from './pages/ApplicationDetailPage'
 import LoginPage from './pages/LoginPage'
 import TrashPage from './pages/TrashPage'
 import ProfilePage from './pages/ProfilePage'
+import ReportIssuePage from './pages/ReportIssuePage'
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
         <Route path="applications/:id" element={<ApplicationDetailPage />} />
         <Route path="trash" element={<TrashPage />} />
         <Route path="profile" element={<ProfilePage />} />
+        <Route path="report-issue" element={<ReportIssuePage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

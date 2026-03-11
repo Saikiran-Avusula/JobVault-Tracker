@@ -13,6 +13,12 @@ export const createApplicationSchema = z.object({
         .trim()
         .min(1, 'Role is required')
         .max(100, 'Role is too long'),
+    location: z
+        .string()
+        .trim()
+        .max(120, 'Location is too long')
+        .optional()
+        .or(z.literal('')),
     application_url: z
         .string()
         .trim()
@@ -23,7 +29,7 @@ export const createApplicationSchema = z.object({
         .string()
         .max(10_000, 'Description is too long')
         .default(''),
-    status: z.enum(['Applied', 'OA', 'Interview', 'Offer', 'Rejected', 'Ghosted']).default('Applied'),
+    status: z.enum(['Applied', 'OA', 'Interview', 'Technical Interview', 'HR Interview', 'Offer', 'Rejected', 'Ghosted']).default('Applied'),
     applied_date: z.string().default(() => new Date().toISOString()),
     follow_up_date: z.string().optional(),
     notes: z.string().max(5_000).default(''),
@@ -54,6 +60,15 @@ export const signUpSchema = loginSchema.extend({
         .trim()
         .min(2, 'Name must be at least 2 characters')
         .max(80, 'Name is too long'),
+})
+
+export const issueReportSchema = z.object({
+    area: z.enum(['ui', 'backend', 'database', 'feature_request', 'other']),
+    severity: z.enum(['low', 'medium', 'high']),
+    title: z.string().trim().min(5, 'Title must be at least 5 characters').max(120, 'Title is too long'),
+    description: z.string().trim().min(20, 'Please add more detail (minimum 20 characters)').max(5000, 'Description is too long'),
+    page_path: z.string().trim().max(255).optional().or(z.literal('')),
+    contact_email: z.string().trim().email('Enter a valid contact email').optional().or(z.literal('')),
 })
 
 // ─── File Validation ────────────────────────────────────────

@@ -9,6 +9,14 @@ import { z } from 'zod'
 type CreateInput = z.infer<typeof createApplicationSchema>
 type UpdateInput = z.infer<typeof updateApplicationSchema>
 
+function getResumeStoragePath(pathOrUrl: string): string {
+    if (!pathOrUrl) return ''
+    if (pathOrUrl.includes('/resumes/')) {
+        return pathOrUrl.split('/resumes/').pop() || ''
+    }
+    return pathOrUrl
+}
+
 // ─── Queries ────────────────────────────────────────────────
 
 export async function fetchApplications(page = 1, pageSize = 20): Promise<{ data: JobApplication[], total: number }> {
@@ -119,26 +127,17 @@ export async function uploadResume(applicationId: string, file: File): Promise<s
 
     if (uploadError) throw new AppError(uploadError.message, 'Failed to upload file.', 'UPLOAD_ERROR')
 
-    // 3. Get public URL
-    const { data } = supabase.storage
-        .from('resumes')
-        .getPublicUrl(filePath)
-
-    // 4. Update the application record
+    // 3. Persist the storage path (more stable than public URL)
     await updateApplication(applicationId, {
         resume_file_name: file.name,
-        resume_text: data.publicUrl,
+        resume_text: filePath,
     })
 
-    return data.publicUrl
+    return filePath
 }
 
 export async function getResumeUrl(path: string): Promise<string> {
-    // Extract the relative storage path from a full public URL if needed
-    let relativePath = path
-    if (path.includes('/resumes/')) {
-        relativePath = path.split('/resumes/').pop() || path
-    }
+    const relativePath = getResumeStoragePath(path)
 
     // Always use signed URL for private bucket
     const { data, error } = await supabase.storage
@@ -153,10 +152,11 @@ export async function getResumeUrl(path: string): Promise<string> {
 
 export async function removeResume(applicationId: string, resumeUrl?: string): Promise<void> {
     // 1. Delete the file from storage if URL exists
-    if (resumeUrl && resumeUrl.includes('/resumes/')) {
-        const relativePath = resumeUrl.split('/resumes/').pop()
+    if (resumeUrl) {
+        const relativePath = getResumeStoragePath(resumeUrl)
         if (relativePath) {
-            await supabase.storage.from('resumes').remove([relativePath])
+            const { error: removeError } = await supabase.storage.from('resumes').remove([relativePath])
+            if (removeError) throw new AppError(removeError.message, 'Failed to remove resume file.', 'REMOVE_RESUME_FILE_ERROR')
         }
     }
 
@@ -171,4 +171,23 @@ export async function removeResume(applicationId: string, resumeUrl?: string): P
         .eq('id', applicationId)
 
     if (error) throw new AppError(error.message, 'Failed to remove resume.', 'REMOVE_RESUME_ERROR')
+}
+
+export async function recoverResumeReference(applicationId: string): Promise<string | null> {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new AppError('No user session', 'Please sign in again.', 'AUTH_REQUIRED')
+
+    const { data: files, error: listError } = await supabase.storage
+        .from('resumes')
+        .list(user.id, { limit: 100 })
+
+    if (listError) throw new AppError(listError.message, 'Could not verify resume files.', 'RESUME_RECOVERY_ERROR')
+
+    const matched = (files || []).find((file) => file.name.startsWith(`${applicationId}-`))
+    if (!matched) return null
+
+    const filePath = `${user.id}/${matched.name}`
+
+    await updateApplication(applicationId, { resume_text: filePath })
+    return filePath
 }

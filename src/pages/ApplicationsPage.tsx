@@ -23,6 +23,8 @@ const MOTIVATIONAL_QUOTES = [
     "Your limitation—it's only your imagination."
 ];
 
+const STATUS_FILTERS = ['All', 'Applied', 'OA', 'Interviews', 'Offer', 'Rejected', 'Ghosted'] as const
+
 export default function ApplicationsPage() {
     const [view, setView] = useState<'grid' | 'list'>('grid')
     const [showAddModal, setShowAddModal] = useState(false)
@@ -31,12 +33,15 @@ export default function ApplicationsPage() {
     const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0)
     const [sortBy, setSortBy] = useState<'date' | 'company' | 'status'>('date')
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
-    const { applications, searchQuery, statusFilter, setStatusFilter, moveToTrash, updateApplication, fetchApplications, loading, currentPage, totalPages, setPage } = useJobStore()
+    const [interviewStageFilter, setInterviewStageFilter] = useState<'All' | 'Technical Interview' | 'HR Interview'>('All')
+    const { applications, searchQuery, statusFilter, setStatusFilter, moveToTrash, removeResume, fetchApplications, loading, currentPage, totalPages, setPage } = useJobStore()
     const navigate = useNavigate()
 
     const activeApps = applications.filter(a => !a.is_trash)
     const totalApps = activeApps.length
-    const activeInterviews = activeApps.filter(a => a.status === 'Interview').length
+    const technicalInterviews = activeApps.filter(a => a.status === 'Technical Interview' || a.status === 'Interview').length
+    const hrInterviews = activeApps.filter(a => a.status === 'HR Interview').length
+    const activeInterviews = activeApps.filter(a => a.status === 'Technical Interview' || a.status === 'HR Interview' || a.status === 'Interview').length
     const activeOAs = activeApps.filter(a => a.status === 'OA').length
     const needsFollowUp = activeApps.filter(a => {
         if (!a.follow_up_date) return false
@@ -58,7 +63,14 @@ export default function ApplicationsPage() {
     const filtered = activeApps.filter(app => {
         const matchesSearch = app.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
             app.role.toLowerCase().includes(searchQuery.toLowerCase())
-        const matchesStatus = statusFilter === 'All' || app.status === statusFilter
+        const matchesStatus = statusFilter === 'All'
+            || (statusFilter === 'Interviews'
+                ? (interviewStageFilter === 'All'
+                    ? app.status === 'Technical Interview' || app.status === 'HR Interview' || app.status === 'Interview'
+                    : (interviewStageFilter === 'Technical Interview'
+                        ? app.status === 'Technical Interview' || app.status === 'Interview'
+                        : app.status === 'HR Interview'))
+                : app.status === statusFilter)
         return matchesSearch && matchesStatus
     })
 
@@ -101,7 +113,7 @@ export default function ApplicationsPage() {
     }
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-6 md:space-y-8">
             {/* Motivational Quote Strip */}
             <div className="relative w-full bg-gradient-to-r from-primary-500/10 via-primary-500/5 to-primary-500/10 border border-primary-500/20 rounded-2xl md:rounded-3xl py-4 md:py-6 px-4 md:px-8 overflow-hidden group">
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-500/5 to-transparent animate-pulse" />
@@ -140,7 +152,7 @@ export default function ApplicationsPage() {
                     <p className="text-gray-500 text-sm font-medium">Your career leads, synchronized to the cloud.</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <div className="flex p-1 bg-gray-100 dark:bg-gray-900 rounded-full border border-gray-200 dark:border-gray-800 shadow-sm transition-colors">
+                    <div className="hidden md:flex p-1 bg-gray-100 dark:bg-gray-900 rounded-full border border-gray-200 dark:border-gray-800 shadow-sm transition-colors">
                         <button
                             onClick={() => setView('grid')}
                             className={`p-2 rounded-full transition-all ${view === 'grid' ? 'bg-primary-500 text-white shadow-md' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
@@ -164,13 +176,14 @@ export default function ApplicationsPage() {
             </div>
 
             {/* Stats Bar — compact on mobile, spacious on desktop */}
-            <div className="grid grid-cols-3 gap-2 md:gap-4">
+            <div className="-mx-1 md:mx-0 overflow-x-auto md:overflow-visible pb-1 scrollbar-hide">
+                <div className="flex md:grid md:grid-cols-3 gap-2 md:gap-4 min-w-max md:min-w-0">
                 {[
                     { label: 'Applications', value: totalApps, icon: Briefcase, color: 'text-primary-400', bg: 'bg-primary-500/10' },
                     { label: 'Pending OAs', value: activeOAs, icon: Code, color: 'text-purple-400', bg: 'bg-purple-500/10' },
                     { label: 'Interviews', value: activeInterviews, icon: Target, color: 'text-orange-400', bg: 'bg-orange-500/10' },
                 ].map((stat, i) => (
-                    <div key={i} className="bg-white dark:bg-[#0c1020]/50 backdrop-blur-xl rounded-2xl md:rounded-3xl border border-gray-200 dark:border-white/5 p-3 md:p-6 flex flex-col md:flex-row items-center md:items-center gap-1.5 md:gap-4 text-center md:text-left group hover:border-gray-300 dark:hover:border-white/10 transition-all shadow-sm dark:shadow-none">
+                    <div key={i} className="w-[170px] sm:w-[190px] md:w-auto bg-white dark:bg-[#0c1020]/50 backdrop-blur-xl rounded-2xl md:rounded-3xl border border-gray-200 dark:border-white/5 p-3 md:p-6 flex flex-col md:flex-row items-center md:items-center gap-1.5 md:gap-4 text-center md:text-left group hover:border-gray-300 dark:hover:border-white/10 transition-all shadow-sm dark:shadow-none">
                         <div className={`w-9 h-9 md:w-12 md:h-12 rounded-xl md:rounded-2xl ${stat.bg} flex items-center justify-center ${stat.color} group-hover:scale-110 transition-transform shrink-0`}>
                             <stat.icon size={18} className="md:hidden" />
                             <stat.icon size={24} className="hidden md:block" />
@@ -178,9 +191,21 @@ export default function ApplicationsPage() {
                         <div>
                             <p className="text-xl md:text-2xl font-black text-gray-900 dark:text-white leading-none">{stat.value}</p>
                             <p className="text-[8px] md:text-[10px] font-black text-gray-500 uppercase tracking-wider md:tracking-widest mt-0.5 md:mt-1.5">{stat.label}</p>
+                            {stat.label === 'Interviews' && (
+                                <div className="mt-1.5 flex items-center justify-center md:justify-start gap-1.5 text-[10px] md:text-[11px] font-black tracking-wide whitespace-nowrap">
+                                    <span className="px-1.5 py-0.5 rounded-md bg-cyan-500/15 text-cyan-600 dark:text-cyan-300">
+                                        T {technicalInterviews}
+                                    </span>
+                                    <span className="text-gray-400 px-0.5">•</span>
+                                    <span className="px-1.5 py-0.5 rounded-md bg-violet-500/15 text-violet-600 dark:text-violet-300">
+                                        HR {hrInterviews}
+                                    </span>
+                                </div>
+                            )}
                         </div>
                     </div>
                 ))}
+                </div>
             </div>
 
             {needsFollowUp > 0 && (
@@ -194,11 +219,14 @@ export default function ApplicationsPage() {
             )}
 
             {/* Filters */}
-            <div className="flex items-center gap-3 overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
-                {['All', 'Applied', 'OA', 'Interview', 'Offer', 'Rejected', 'Ghosted'].map((s) => (
+            <div className="flex items-center gap-2 md:gap-3 overflow-x-auto md:overflow-visible whitespace-nowrap pb-2 scrollbar-hide">
+                {STATUS_FILTERS.map((s) => (
                     <button
                         key={s}
-                        onClick={() => setStatusFilter(s as any)}
+                        onClick={() => {
+                            setStatusFilter(s)
+                            if (s !== 'Interviews') setInterviewStageFilter('All')
+                        }}
                         className={`px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300 border-none outline-none ring-0
               ${statusFilter === s
                                 ? 'bg-primary-500 text-white shadow-float scale-105'
@@ -207,6 +235,26 @@ export default function ApplicationsPage() {
                         {s}
                     </button>
                 ))}
+                {statusFilter === 'Interviews' && (
+                    <div className="hidden md:flex shrink-0 md:w-auto md:ml-2 items-center gap-2 p-1 rounded-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/60">
+                        {([
+                            { key: 'All', label: 'All' },
+                            { key: 'Technical Interview', label: 'Technical' },
+                            { key: 'HR Interview', label: 'HR' },
+                        ] as const).map((option) => (
+                            <button
+                                key={option.key}
+                                onClick={() => setInterviewStageFilter(option.key)}
+                                className={`px-3 md:px-3.5 py-1.5 rounded-full text-[11px] md:text-xs font-bold transition-all
+                                    ${interviewStageFilter === option.key
+                                        ? 'bg-primary-500 text-white shadow-md'
+                                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700/70'}`}
+                            >
+                                {option.label}
+                            </button>
+                        ))}
+                    </div>
+                )}
             </div>
 
             {/* Content */}
@@ -292,8 +340,41 @@ export default function ApplicationsPage() {
                         ))}
                     </div>
                 ) : (
-                    <div className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 overflow-hidden transition-colors shadow-sm">
-                        <div className="overflow-x-auto">
+                    <>
+                        <div className="md:hidden space-y-3">
+                            {sorted.map(app => (
+                                <div
+                                    key={app.id}
+                                    onClick={() => navigate(`/applications/${app.id}`)}
+                                    className="glass-panel p-4 rounded-2xl cursor-pointer active:scale-[0.99] transition-all"
+                                >
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="min-w-0">
+                                            <p className="text-base font-bold text-glass-primary truncate">{app.company}</p>
+                                            <p className="text-sm text-glass-secondary truncate">{app.role}</p>
+                                        </div>
+                                        <StatusPill status={app.status} />
+                                    </div>
+                                    <div className="mt-3 flex items-center justify-between">
+                                        <p className="text-xs text-glass-tertiary">{app.location || 'Location not set'}</p>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                moveToTrash(app.id, true)
+                                                toast.success(`${app.company} moved to Trash`)
+                                            }}
+                                            className="glass-button p-2 text-rose-500"
+                                            title="Move to Trash"
+                                        >
+                                            <Trash2 size={14} />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="hidden md:block bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 overflow-hidden transition-colors shadow-sm">
+                            <div className="overflow-x-auto">
                             <table className="w-full text-left">
                                 <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-800/30 border-b-2 border-gray-200 dark:border-gray-700">
                                     <tr>
@@ -337,10 +418,14 @@ export default function ApplicationsPage() {
                                                         <div className="flex items-center gap-2">
                                                             <div className="text-sm font-bold text-gray-900 dark:text-white">{app.company}</div>
                                                             {app.resume_file_name && (
-                                                                <FileText size={12} className="text-primary-500" title="Resume uploaded" />
+                                                                <span title="Resume uploaded">
+                                                                    <FileText size={12} className="text-primary-500" />
+                                                                </span>
                                                             )}
                                                             {app.follow_up_date && new Date(app.follow_up_date) <= new Date() && (
-                                                                <Bell size={12} className="text-orange-500 animate-pulse" title="Follow-up needed" />
+                                                                <span title="Follow-up needed">
+                                                                    <Bell size={12} className="text-orange-500 animate-pulse" />
+                                                                </span>
                                                             )}
                                                         </div>
                                                         <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">{app.role}</div>
@@ -394,8 +479,9 @@ export default function ApplicationsPage() {
                                     ))}
                                 </tbody>
                             </table>
+                            </div>
                         </div>
-                    </div>
+                    </>
                 )
             }
 
@@ -452,9 +538,9 @@ export default function ApplicationsPage() {
             <ConfirmModal
                 open={!!resumeToRemove}
                 onClose={() => setResumeToRemove(null)}
-                onConfirm={() => {
+                onConfirm={async () => {
                     const app = applications.find(a => a.id === resumeToRemove)
-                    updateApplication(resumeToRemove!, { resume_file_name: undefined })
+                    await removeResume(resumeToRemove!, app?.resume_text || undefined)
                     setResumeToRemove(null)
                     toast.success(`Removed resume for ${app?.company}`)
                 }}
@@ -471,6 +557,8 @@ function StatusPill({ status }: { status: string }) {
         'Applied': { color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/30', icon: '📝' },
         'OA': { color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-purple-900/30', icon: '💻' },
         'Interview': { color: 'text-orange-600 dark:text-orange-400', bg: 'bg-orange-50 dark:bg-orange-900/30', icon: '📅' },
+        'Technical Interview': { color: 'text-cyan-600 dark:text-cyan-400', bg: 'bg-cyan-50 dark:bg-cyan-900/30', icon: '🧠' },
+        'HR Interview': { color: 'text-violet-600 dark:text-violet-400', bg: 'bg-violet-50 dark:bg-violet-900/30', icon: '🗣️' },
         'Offer': { color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/30', icon: '✨' },
         'Rejected': { color: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-50 dark:bg-rose-900/30', icon: '❌' },
         'Ghosted': { color: 'text-gray-600 dark:text-gray-400', bg: 'bg-gray-50 dark:bg-gray-800', icon: '👻' },
